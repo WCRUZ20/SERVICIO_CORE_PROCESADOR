@@ -1,3 +1,4 @@
+using Application.DTO;
 using Domain.SAP;
 using System.Collections.Generic;
 using System.Data;
@@ -27,9 +28,24 @@ namespace Application.Interfaces.HANA
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Inserta documentos en la tabla histórica de HANA
+        /// </summary>
+        Task<bool> InsertItemAsync(
+            SapItemsTable items,
+            //OdbcConnection connection,
+            //OdbcTransaction transaction,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Obtiene Transacciones pendientes de procesamiento desde SAP
         /// </summary>
         Task<IEnumerable<SapDrivinTable>> GetPendingDocumentsTypeAsync(
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Obtiene Transacciones pendientes de procesamiento desde SAP
+        /// </summary>
+        Task<IEnumerable<SapItemsTable>> GetPendingItemsTypeAsync(
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -37,6 +53,13 @@ namespace Application.Interfaces.HANA
         /// </summary>
         /// 
         Task<IEnumerable<SapDrivinTable>> GetPendingDocumentsAsync<TResult>(
+            CancellationToken cancellationToken = default) where TResult : class, new();
+
+        /// <summary>
+        /// Obtiene items pendientes de procesamiento en HANA
+        /// </summary>
+        /// 
+        Task<IEnumerable<SapItemsTable>> GetPendingItemsAsync<TResult>(
             CancellationToken cancellationToken = default) where TResult : class, new();
 
         /// <summary>
@@ -51,6 +74,13 @@ namespace Application.Interfaces.HANA
         /// </summary>
         Task<bool> ExistsAsync(
             int transaction, int docEntry, int docNum,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Verifica si un articulo ya existe en tabla HANA
+        /// </summary>
+        Task<bool> ExistsItemAsync(
+            int transaction, string docEntry, string docNum,
             CancellationToken cancellationToken = default);
 
 

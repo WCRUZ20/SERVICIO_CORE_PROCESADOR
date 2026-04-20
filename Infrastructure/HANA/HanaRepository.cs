@@ -1,3 +1,4 @@
+using Application.DTO;
 using Application.Interfaces.HANA;
 using Domain.Configuration;
 using Domain.Helper;
@@ -27,6 +28,7 @@ namespace Infrastructure.HANA
 
         private readonly ResiliencePipeline<bool> _transactionResiliencia;
         private readonly ResiliencePipeline<IEnumerable<SapDrivinTable>> _queryResiliencia;
+        private readonly ResiliencePipeline<IEnumerable<SapItemsTable>> _queryResilienciaItems;
         //private readonly ResiliencePipeline<IEnumerable<SapDrivinTable>> _sapDrivinTablePipeline;
         //private readonly ResiliencePipeline<bool> _boolPipeline;
 
@@ -45,6 +47,7 @@ namespace Infrastructure.HANA
             // Inicializar pipelines de resiliencia
             _transactionResiliencia = HanaResiliencePipeline.Create<bool>(logger);
             _queryResiliencia = HanaResiliencePipeline.Create<IEnumerable<SapDrivinTable>>(logger);
+            _queryResilienciaItems = HanaResiliencePipeline.Create<IEnumerable<SapItemsTable>>(logger);
             //_boolPipeline = HanaResiliencePipeline.Create<bool>(logger);
         }
 
@@ -78,7 +81,35 @@ namespace Infrastructure.HANA
             }, cancellationToken);
         }
 
+        public async Task<IEnumerable<SapItemsTable>> GetPendingItemsTypeAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _queryResilienciaItems.ExecuteAsync(async (ct) =>
+            {
 
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "filtro_1", "ITMP" },
+                    { "filtro_2", "" },
+                    { "filtro_3", "" },
+                    { "filtro_4", "" }
+                };
+
+                var itemsType = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemsTable>(
+                    connection,
+                    "sp_integracion_sap_drivin_consultas",
+                    parameters,
+                    ct);
+
+                _logger.LogInformation(
+                    $"Se obtuvieron {itemsType.Count()} articulos pendientes desde HANA");
+
+                return itemsType;
+            }, cancellationToken);
+        }
 
         public async Task<bool> ExistsAsync(
             int transaction,
@@ -128,8 +159,54 @@ namespace Infrastructure.HANA
 
         }
 
+        public async Task<bool> ExistsItemAsync(
+            int transaction,
+            string docEntry,
+            string docNum,
 
-        
+            CancellationToken cancellationToken = default)
+        {
+            return await _transactionResiliencia.ExecuteAsync(async (ct) =>
+            {
+                var itemQuery = $"Articulo:{docEntry} Transaction:{transaction}";
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "filtro_1", "ITME" },
+                    { "filtro_2", docEntry },
+                    { "filtro_3", docNum },
+                    { "filtro_4", transaction },
+                    { "filtro_5", "" }
+                };
+
+                var _listaItems = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemsTable>(
+                    connection,
+                    "sp_integracion_sap_drivin_consultas",
+                    parameters,
+                    ct);
+                var _items = _listaItems.FirstOrDefault();
+                if (_items == null || _items.SapDocEntry == "0")
+                {
+
+                    _logger.LogInformation($"Articulo {itemQuery} NO existe en cola.");
+                    return false;
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        $"Articulo {itemQuery} Ya existe en cola con el estado: {_items.Status}");
+                    return true;
+                }
+
+
+
+
+            }, cancellationToken);
+
+        }
+
 
         public async Task<bool> InsertDocumentAsync(
             SapDrivinTable document,
@@ -183,6 +260,58 @@ namespace Infrastructure.HANA
             }, cancellationToken);
         }
 
+        public async Task<bool> InsertItemAsync(
+            SapItemsTable item,
+            //OdbcConnection connection,
+            //OdbcTransaction transaction,
+            CancellationToken cancellationToken = default)
+        {
+
+            return await _transactionResiliencia.ExecuteAsync(async (ct) =>
+            {
+
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+
+
+                var parameters = new Dictionary<string, object>
+                    {
+                        { "filtro_1", "ITMI" },
+                        { "Code", "" },
+                        { "Name", "" },
+                        { "Transactions", item.Transaction },
+                        { "SapDocEntry", item.SapDocEntry },
+                        { "SapDocNum", item.SapDocNum },
+                        { "SapDocStatus", item.SapDocStatus },
+                        { "Json", "" },
+                        { "CreatedBy", "" },
+                        { "UpdatedBy", "" },
+                        { "Comments", "" },
+                        { "Status", StatusHanaDocumentLevel.Inserted},
+                        { "ResultFlag", 0 }
+
+
+                    };
+
+                var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
+                connection,
+                "sp_integracion_sap_drivin_transactions",
+                parameters,
+                null,
+                ct);
+
+                if (!result)
+                {
+                    _logger.LogInformation($"Articulo NO insertado : {item.SapDocEntry} ");
+
+                }
+
+
+                return (result);
+            }, cancellationToken);
+        }
+
 
         public async Task<IEnumerable<SapDrivinTable>> GetPendingDocumentsAsync<TResult>(
            
@@ -211,10 +340,36 @@ namespace Infrastructure.HANA
                 return documents;
             }, cancellationToken);
         }
-        
-        
-        
-        
+
+        public async Task<IEnumerable<SapItemsTable>> GetPendingItemsAsync<TResult>(
+
+            CancellationToken cancellationToken = default) where TResult : class, new()
+        {
+            return await _queryResilienciaItems.ExecuteAsync(async (ct) =>
+            {
+
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "filtro_1", "PITM" },
+                    { "filtro_2", "" },
+                    { "filtro_3", "" },
+                    { "filtro_4", "" }
+                };
+
+                var items = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemsTable>(
+                    connection,
+                    "sp_integracion_sap_drivin_consultas",
+                    parameters,
+                    ct);
+
+                return items;
+            }, cancellationToken);
+        }
+
+
         public async Task<bool> MarkStatusDocumentAsAsync(
             SapDrivinTable document,
             CancellationToken cancellationToken = default)
@@ -265,8 +420,6 @@ namespace Infrastructure.HANA
 
 
         }
-
-
 
 
         public async Task<IEnumerable<SapDrivinTable>> GetPendingHooksAsync<TResult>(

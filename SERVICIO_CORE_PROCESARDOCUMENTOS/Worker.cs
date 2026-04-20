@@ -93,26 +93,48 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
             IServiceScope scope,
             CancellationToken cancellationToken)
         {
-                var useCase = scope.ServiceProvider
-                    .GetRequiredService<GetDocumentsTypeSapUseCase>();
+            #region "base caso"
+            //var useCase = scope.ServiceProvider
+            //    .GetRequiredService<GetDocumentsTypeSapUseCase>();
 
-                _logger.LogInformation("Ejecutando proceso SAP → HANA");
+            //_logger.LogInformation("Ejecutando proceso SAP → HANA");
 
-                var result = await useCase.ExecuteAsync(cancellationToken);
+            //var result = await useCase.ExecuteAsync(cancellationToken);
 
-                if (result.IsSuccess)
-                {
-                    _logger.LogInformation(
-                        $"Proceso SAP → HANA completado: {result.Message}. " +
-                        $"Encontradas: {result.DocumentsFound}, Insertadas: {result.DocumentsInserted}"
-                        );
-                }
-                else
-                {
-                    _logger.LogError(
-                        $"Error en proceso SAP → HANA: {result.Message}");
-                }
-           
+            //if (result.IsSuccess)
+            //{
+            //    _logger.LogInformation(
+            //        $"Proceso SAP → HANA completado: {result.Message}. " +
+            //        $"Encontradas: {result.DocumentsFound}, Insertadas: {result.DocumentsInserted}"
+            //        );
+            //}
+            //else
+            //{
+            //    _logger.LogError(
+            //        $"Error en proceso SAP → HANA: {result.Message}");
+            //}
+            #endregion
+
+            var useCaseArticulo = scope.ServiceProvider
+                    .GetRequiredService<GetItemsSapUseCase>();
+
+            _logger.LogInformation("Ejecutando proceso SAP → HANA");
+
+            var resultAticulo = await useCaseArticulo.ExecuteAsync(cancellationToken);
+
+            if (resultAticulo.IsSuccess)
+            {
+                _logger.LogInformation(
+                    $"Proceso SAP → HANA completado: {resultAticulo.Message}. " +
+                    $"Encontradas: {resultAticulo.ItemsFound}, Insertadas: {resultAticulo.ItemsInserted}"
+                    );
+            }
+            else
+            {
+                _logger.LogError(
+                    $"Error en proceso SAP → HANA: {resultAticulo.Message}");
+            }
+
         }
 
         /// <summary>

@@ -201,6 +201,8 @@ builder.Services.AddScoped<IMapper, ServiceMapper>();
 // ==========================
 // Command Handlers
 // ==========================
+
+//DOCUMENTOS
 builder.Services.AddScoped<
     ICommandHandler<Application.Commands.GetPendingDocumentsTypeCommand, IEnumerable<SapDrivinTableDTO>>,
     Application.Handlers.GetPendingDocumentsTypeCommandHandler>();
@@ -213,6 +215,20 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     ICommandHandler<Application.Commands.InsertDocumentCommand, bool>,
     Application.Handlers.InsertDocumentCommandHandler>();
+
+//SOCIOS DE NEGOCIO (CLIENTES)
+builder.Services.AddScoped<
+    ICommandHandler<Application.Commands.GetPendingItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    Application.Handlers.GetPendingItemsTypeCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<Application.Commands.CheckItemExistsCommand, bool>,
+    Application.Handlers.CheckItemExistsCommandHandler>();
+
+
+builder.Services.AddScoped<
+    ICommandHandler<Application.Commands.InsertItemsCommand, bool>,
+    Application.Handlers.InsertItemCommandHandler>();
 
 // Handlers para proceso HANA → API
 builder.Services.AddScoped<
