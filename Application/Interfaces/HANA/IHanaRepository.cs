@@ -63,6 +63,13 @@ namespace Application.Interfaces.HANA
             CancellationToken cancellationToken = default) where TResult : class, new();
 
         /// <summary>
+        /// Obtiene el detalle del artículo en SAP/HANA a partir del ItemCode.
+        /// </summary>
+        Task<SapItemDetailDTO?> GetItemDetailByItemCodeAsync(
+            string itemCode,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Marca un documento como procesado
         /// </summary>
         Task<bool> MarkStatusDocumentAsAsync(

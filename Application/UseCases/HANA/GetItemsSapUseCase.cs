@@ -66,12 +66,12 @@ namespace Application.UseCases.HANA
                             IsSuccess = true,
                             ItemsFound = 0,
                             ItemsInserted = 0,
-                            Message = "No hay documentos nuevos"
+                            Message = "No hay articulos nuevos"
                         };
                     }
 
                     _logger.LogInformation(
-                        $"Se encontraron {itemsList.Count} documentos desde SAP");
+                        $"Se encontraron {itemsList.Count} articulos desde SAP");
 
                     // 2. Procesar registro por registro: verificar e insertar
                     int itemsInserted = 0;

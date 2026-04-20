@@ -1,3 +1,4 @@
+using Application.DTO;
 using Application.Interfaces.API;
 using Domain.Configuration;
 using Domain.SAP;
@@ -145,7 +146,7 @@ namespace Infrastructure.API
         }
 
         public async Task<(bool IsSuccess, string? Message)> SendItemAsync(
-            SapItemsTable item,
+            WooProductRequestDTO item,
             CancellationToken cancellationToken = default)
         {
             if (item == null)
@@ -155,9 +156,9 @@ namespace Infrastructure.API
                 return (false, error);
             }
 
-            if (string.IsNullOrWhiteSpace(item.SapDocEntry))
+            if (string.IsNullOrWhiteSpace(item.Name))
             {
-                var error = $"SapDocEntry inválido: {item.SapDocEntry}";
+                var error = "Name inválido para el payload de artículo";
                 _logger.LogWarning(error);
                 return (false, error);
             }
@@ -176,9 +177,9 @@ namespace Infrastructure.API
             try
             {
                 _logger.LogInformation(
-                    "Enviando articulo SapDocEntry={SapDocEntry}, SapDocNum={SapDocNum} al endpoint {Endpoint}",
-                    item.SapDocEntry,
-                    item.SapDocNum,
+                    "Enviando payload de artículo SKU={Sku}, Name={Name} al endpoint {Endpoint}",
+                    item.SKU,
+                    item.Name,
                     endpoint);
 
                 using var response = await _httpClient.PostAsJsonAsync(
@@ -189,31 +190,31 @@ namespace Infrastructure.API
                 return await ProcessResponseAsync(
                     response,
                     endpoint,
-                    $"SapDocEntry={item.SapDocEntry}",
+                    $"SKU={item.SKU}",
                     cancellationToken);
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
-                var errorMessage = $"Timeout al enviar articulo SapDocEntry={item.SapDocEntry}";
+                var errorMessage = $"Timeout al enviar articulo SKU={item.SKU}";
                 _logger.LogError(ex, $"{errorMessage}. Timeout configurado: {DefaultTimeoutSeconds} segundos");
                 return (false, errorMessage);
             }
             catch (TaskCanceledException ex)
             {
-                var errorMessage = $"Operación cancelada al enviar articulo SapDocEntry={item.SapDocEntry}";
+                var errorMessage = $"Operación cancelada al enviar articulo SKU={item.SKU}";
                 _logger.LogWarning(ex, errorMessage);
                 return (false, errorMessage);
             }
             catch (HttpRequestException ex)
             {
                 var errorMessage = $"Error de comunicación con la API: {ex.Message}";
-                _logger.LogError(ex, $"{errorMessage} para articulo SapDocEntry={item.SapDocEntry}");
+                _logger.LogError(ex, $"{errorMessage} para articulo SKU={item.SKU}");
                 return (false, errorMessage);
             }
             catch (Exception ex)
             {
                 var errorMessage = $"Error inesperado: {ex.Message}";
-                _logger.LogError(ex, $"{errorMessage} al enviar articulo SapDocEntry={item.SapDocEntry}");
+                _logger.LogError(ex, $"{errorMessage} al enviar articulo SKU={item.SKU}");
                 return (false, errorMessage);
             }
         }

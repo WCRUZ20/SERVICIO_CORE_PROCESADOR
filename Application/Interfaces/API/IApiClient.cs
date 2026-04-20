@@ -1,3 +1,4 @@
+using Application.DTO;
 using Domain.SAP;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace Application.Interfaces.API
         /// Envía un artículo a la API externa
         /// </summary>
         Task<(bool IsSuccess, string? Message)> SendItemAsync(
-            SapItemsTable item,
+            WooProductRequestDTO item,
             CancellationToken cancellationToken = default);
 
         /// <summary>

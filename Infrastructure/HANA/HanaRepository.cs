@@ -29,6 +29,7 @@ namespace Infrastructure.HANA
         private readonly ResiliencePipeline<bool> _transactionResiliencia;
         private readonly ResiliencePipeline<IEnumerable<SapDrivinTable>> _queryResiliencia;
         private readonly ResiliencePipeline<IEnumerable<SapItemsTable>> _queryResilienciaItems;
+        private readonly ResiliencePipeline<SapItemDetailDTO?> _queryResilienciaItemDetail;
         //private readonly ResiliencePipeline<IEnumerable<SapDrivinTable>> _sapDrivinTablePipeline;
         //private readonly ResiliencePipeline<bool> _boolPipeline;
 
@@ -48,6 +49,7 @@ namespace Infrastructure.HANA
             _transactionResiliencia = HanaResiliencePipeline.Create<bool>(logger);
             _queryResiliencia = HanaResiliencePipeline.Create<IEnumerable<SapDrivinTable>>(logger);
             _queryResilienciaItems = HanaResiliencePipeline.Create<IEnumerable<SapItemsTable>>(logger);
+            _queryResilienciaItemDetail = HanaResiliencePipeline.Create<SapItemDetailDTO?>(logger);
             //_boolPipeline = HanaResiliencePipeline.Create<bool>(logger);
         }
 
@@ -108,6 +110,48 @@ namespace Infrastructure.HANA
                     $"Se obtuvieron {itemsType.Count()} articulos pendientes desde HANA");
 
                 return itemsType;
+            }, cancellationToken);
+        }
+
+        public async Task<SapItemDetailDTO?> GetItemDetailByItemCodeAsync(
+            string itemCode,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(itemCode))
+            {
+                _logger.LogWarning("ItemCode vacío al consultar detalle de artículo.");
+                return null;
+            }
+
+            return await _queryResilienciaItemDetail.ExecuteAsync(async (ct) =>
+            {
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "filtro_1", "ITMD" },
+                    { "filtro_2", itemCode },
+                    { "filtro_3", "" },
+                    { "filtro_4", "" }
+                };
+
+                var details = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemDetailDTO>(
+                    connection,
+                    "sp_integracion_sap_drivin_consultas",
+                    parameters,
+                    ct);
+
+                var detail = details.FirstOrDefault();
+
+                if (detail == null)
+                {
+                    _logger.LogWarning("No se encontró detalle de artículo para ItemCode={ItemCode}", itemCode);
+                    return null;
+                }
+
+                _logger.LogInformation("Detalle de artículo obtenido para ItemCode={ItemCode}", itemCode);
+                return detail;
             }, cancellationToken);
         }
 
@@ -223,7 +267,7 @@ namespace Infrastructure.HANA
 
 
                 
-                        var parameters = new Dictionary<string, object>
+                    var parameters = new Dictionary<string, object>
                     {
                         { "filtro_1", "IRSD" },
                         { "Code", "" },
