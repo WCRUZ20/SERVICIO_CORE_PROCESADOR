@@ -97,6 +97,7 @@ var decryptedSecrets = new OptionSecretsSL
     //UserSLSAP = DecryptIfNeeded(secretsSection["UserSLSAP"], secretProtector),
     ApiMiddlewareIPUrl = DecryptIfNeeded(secretsSection["ApiMiddlewareIPUrl"], secretProtector),
     ProcesarDocumentoEndPoint = DecryptIfNeeded(secretsSection["ProcesarDocumentoEndPoint"], secretProtector),
+    ProcesarArticuloEndPoint = DecryptIfNeeded(secretsSection["ProcesarArticuloEndPoint"], secretProtector),
     AuthEndpoint = secretsSection["AuthEndpoint"], // No necesita desencriptar, es solo una ruta
     ApiClientId = secretsSection["ApiClientId"], // No necesita desencriptar si es público
     ApiClientSecret = DecryptIfNeeded(secretsSection["ApiClientSecret"], secretProtector), // Puede estar encriptado
@@ -116,6 +117,7 @@ builder.Services.Configure<OptionSecretsSL>(options =>
 
     options.ApiMiddlewareIPUrl = decryptedSecrets.ApiMiddlewareIPUrl;
     options.ProcesarDocumentoEndPoint = decryptedSecrets.ProcesarDocumentoEndPoint;
+    options.ProcesarArticuloEndPoint = decryptedSecrets.ProcesarArticuloEndPoint;
     options.AuthEndpoint = decryptedSecrets.AuthEndpoint;
     options.ApiClientId = decryptedSecrets.ApiClientId;
     options.ApiClientSecret = decryptedSecrets.ApiClientSecret;
@@ -242,6 +244,17 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     ICommandHandler<Application.Commands.MarkStatusDocuemntAsCommand, bool>,
     Application.Handlers.MarkStatusDocumentAsCommandHandler>();
+builder.Services.AddScoped<
+    ICommandHandler<Application.Commands.GetPendingHanaItemsCommand, IEnumerable<SapItemsTable>>,
+    Application.Handlers.GetPendingHanaItemsCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<Application.Commands.SendItemsToApiCommand, (bool IsSuccess, string? Message)>,
+    Application.Handlers.SendItemsToApiCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<Application.Commands.MarkStatusItemAsCommand, bool>,
+    Application.Handlers.MarkStatusItemAsCommandHandler>();
 
 builder.Services.AddScoped<
     ICommandHandler<Application.Commands.GetPendingHooksCommand, IEnumerable<SapDrivinTable>>,
@@ -259,7 +272,9 @@ builder.Services.AddScoped<
 // UseCases
 // ==========================
 builder.Services.AddScoped<GetDocumentsTypeSapUseCase>();
+builder.Services.AddScoped<GetItemsSapUseCase>();
 builder.Services.AddScoped<ProcesarDocumentsHanaUseCase>();
+builder.Services.AddScoped<ProcesarItemsHanaUseCase>();
 builder.Services.AddScoped<GetHookSapUseCase>();
 
 

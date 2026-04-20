@@ -16,6 +16,13 @@ namespace Application.Interfaces.API
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Envía un artículo a la API externa
+        /// </summary>
+        Task<(bool IsSuccess, string? Message)> SendItemAsync(
+            SapItemsTable item,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Envía múltiples transferencias a la API externa
         /// </summary>
         //Task<(int SuccessCount, int FailureCount, List<string> Errors)> SendStockTransfersAsync(

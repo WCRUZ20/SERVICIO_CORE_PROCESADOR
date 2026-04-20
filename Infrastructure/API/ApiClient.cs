@@ -112,7 +112,11 @@ namespace Infrastructure.API
                     //_jsonOptions,
                     cancellationToken);
 
-                return await ProcessResponseAsync(response, document, cancellationToken);
+                return await ProcessResponseAsync(
+                    response,
+                    endpoint,
+                    $"SapDocEntry={document.SapDocEntry}",
+                    cancellationToken);
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
@@ -140,12 +144,88 @@ namespace Infrastructure.API
             }
         }
 
+        public async Task<(bool IsSuccess, string? Message)> SendItemAsync(
+            SapItemsTable item,
+            CancellationToken cancellationToken = default)
+        {
+            if (item == null)
+            {
+                const string error = "El articulo no puede ser null";
+                _logger.LogWarning(error);
+                return (false, error);
+            }
+
+            if (string.IsNullOrWhiteSpace(item.SapDocEntry))
+            {
+                var error = $"SapDocEntry inválido: {item.SapDocEntry}";
+                _logger.LogWarning(error);
+                return (false, error);
+            }
+
+            var endpoint = _secrets.ProcesarArticuloEndPoint;
+
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                const string error = "No hay endpoint configurado para articulos";
+                _logger.LogError(error);
+                return (false, error);
+            }
+
+            endpoint = endpoint.TrimStart('/');
+
+            try
+            {
+                _logger.LogInformation(
+                    "Enviando articulo SapDocEntry={SapDocEntry}, SapDocNum={SapDocNum} al endpoint {Endpoint}",
+                    item.SapDocEntry,
+                    item.SapDocNum,
+                    endpoint);
+
+                using var response = await _httpClient.PostAsJsonAsync(
+                    endpoint,
+                    item,
+                    cancellationToken);
+
+                return await ProcessResponseAsync(
+                    response,
+                    endpoint,
+                    $"SapDocEntry={item.SapDocEntry}",
+                    cancellationToken);
+            }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                var errorMessage = $"Timeout al enviar articulo SapDocEntry={item.SapDocEntry}";
+                _logger.LogError(ex, $"{errorMessage}. Timeout configurado: {DefaultTimeoutSeconds} segundos");
+                return (false, errorMessage);
+            }
+            catch (TaskCanceledException ex)
+            {
+                var errorMessage = $"Operación cancelada al enviar articulo SapDocEntry={item.SapDocEntry}";
+                _logger.LogWarning(ex, errorMessage);
+                return (false, errorMessage);
+            }
+            catch (HttpRequestException ex)
+            {
+                var errorMessage = $"Error de comunicación con la API: {ex.Message}";
+                _logger.LogError(ex, $"{errorMessage} para articulo SapDocEntry={item.SapDocEntry}");
+                return (false, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Error inesperado: {ex.Message}";
+                _logger.LogError(ex, $"{errorMessage} al enviar articulo SapDocEntry={item.SapDocEntry}");
+                return (false, errorMessage);
+            }
+        }
+
+
         /// <summary>
         /// Procesa la respuesta HTTP y determina si fue exitosa
         /// </summary>
         private async Task<(bool IsSuccess, string? Message)> ProcessResponseAsync(
             HttpResponseMessage response,
-            SapDrivinTable document,
+            string endpoint,
+            string entityRef,
             CancellationToken cancellationToken)
         {
             var statusCode = response.StatusCode;
@@ -156,7 +236,7 @@ namespace Infrastructure.API
                 _logger.LogInformation(
                     "Documento SapDocEntry={SapDocEntry} enviado exitosamente. " +
                     "StatusCode={StatusCode}, Response={Response}",
-                    document.SapDocEntry,
+                    entityRef,
                     statusCode,
                     content);
 
@@ -175,12 +255,12 @@ namespace Infrastructure.API
                 HttpStatusCode.Forbidden => 
                     "Acceso prohibido (403). Verificar permisos",
                 
-                HttpStatusCode.NotFound => 
-                    $"Endpoint no encontrado (404): {_secrets.ProcesarDocumentoEndPoint}",
-                
-                HttpStatusCode.Conflict => 
-                    $"Conflicto (409): El documento SapDocEntry={document.SapDocEntry} ya existe. {ExtractErrorMessage(content)}",
-                
+                HttpStatusCode.NotFound =>
+                    $"Endpoint no encontrado (404): {endpoint}",
+
+                HttpStatusCode.Conflict =>
+                    $"Conflicto (409): El registro {entityRef} ya existe. {ExtractErrorMessage(content)}",
+
                 HttpStatusCode.UnprocessableEntity => 
                     $"Entidad no procesable (422): {ExtractErrorMessage(content)}",
                 
@@ -202,8 +282,8 @@ namespace Infrastructure.API
             _logger.LogWarning(
                 "Error al enviar documento SapDocEntry={SapDocEntry} al endpoint {Endpoint}. " +
                 "StatusCode={StatusCode}, Error={ErrorMessage}",
-                document.SapDocEntry,
-                _secrets.ProcesarDocumentoEndPoint,
+                entityRef,
+                endpoint,
                 statusCode,
                 errorMessage);
 

@@ -1,4 +1,5 @@
 
+using Application.Interfaces.API;
 using Application.UseCases.API;
 using Application.UseCases.HANA;
 using Domain.Configuration;
@@ -148,10 +149,13 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
             {
                 var useCase = scope.ServiceProvider
                     .GetRequiredService<ProcesarDocumentsHanaUseCase>();
+                var itemsUseCase = scope.ServiceProvider
+                    .GetRequiredService<ProcesarItemsHanaUseCase>();
 
                 _logger.LogInformation("Ejecutando proceso HANA → API");
 
                 var result = await useCase.ExecuteAsync(cancellationToken);
+                var itemsResult = await itemsUseCase.ExecuteAsync(cancellationToken);
 
                 if (result.IsSuccess)
                 {
@@ -176,6 +180,23 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
                     _logger.LogError(
                         "Error en proceso HANA → API: {Error}",
                         result.ErrorMessage);
+                }
+
+                if (itemsResult.IsSuccess)
+                {
+                    _logger.LogInformation(
+                        "Proceso HANA → API ARTICULOS completado: {Message}. " +
+                        "Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
+                        itemsResult.Message,
+                        itemsResult.ItemsProcessed,
+                        itemsResult.ItemsSent,
+                        itemsResult.ItemsFailed);
+                }
+                else
+                {
+                    _logger.LogError(
+                        "Error en proceso HANA → API ARTICULOS: {Error}",
+                        itemsResult.ErrorMessage);
                 }
             }
             catch (Exception ex)

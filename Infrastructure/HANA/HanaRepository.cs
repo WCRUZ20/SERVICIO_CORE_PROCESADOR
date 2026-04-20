@@ -421,6 +421,47 @@ namespace Infrastructure.HANA
 
         }
 
+        public async Task<bool> MarkStatusItemAsAsync(
+            SapItemsTable item,
+            CancellationToken cancellationToken = default)
+        {
+            return await _transactionResiliencia.ExecuteAsync(async (ct) =>
+            {
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+                var parameters = new Dictionary<string, object>
+                    {
+                        { "filtro_1", "ARIT" },
+                        { "Code", "" },
+                        { "Name", "" },
+                        { "Transactions", item.Transaction },
+                        { "SapDocEntry", item.SapDocEntry },
+                        { "SapDocNum", item.SapDocNum },
+                        { "SapDocStatus", ""},
+                        { "Json", item.Json },
+                        { "CreatedBy", "" },
+                        { "UpdatedBy", "" },
+                        { "Comments", "" },
+                        { "Status", item.Status },
+                        { "ResultFlag", 0 }
+                    };
+
+                var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
+                    connection,
+                    "sp_integracion_sap_drivin_transactions",
+                    parameters,
+                    null,
+                    ct);
+
+                if (!result)
+                {
+                    _logger.LogInformation($"Articulo NO actualizado : {item.SapDocEntry} ");
+                }
+
+                return result;
+            }, cancellationToken);
+        }
 
         public async Task<IEnumerable<SapDrivinTable>> GetPendingHooksAsync<TResult>(
 

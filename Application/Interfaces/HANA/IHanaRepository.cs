@@ -70,6 +70,13 @@ namespace Application.Interfaces.HANA
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Marca un artículo como procesado
+        /// </summary>
+        Task<bool> MarkStatusItemAsAsync(
+            SapItemsTable item,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Verifica si un documento ya existe en tabla HANA
         /// </summary>
         Task<bool> ExistsAsync(
