@@ -54,7 +54,7 @@ namespace Application.UseCases.HANA
 
                 try
                 {
-                    // 1. Obtener documentos (retorna DTOs)
+                    // 1. Obtener articulos (retorna DTOs)
                     var getCommand = new GetPendingItemsTypeCommand();
                     var items = await _getItemsHandler.HandleAsync(getCommand);
                     var itemsList = items.ToList();
