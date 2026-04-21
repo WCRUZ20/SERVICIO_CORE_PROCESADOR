@@ -147,40 +147,40 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
         {
             try
             {
-                var useCase = scope.ServiceProvider
-                    .GetRequiredService<ProcesarDocumentsHanaUseCase>();
+                //var useCase = scope.ServiceProvider
+                //    .GetRequiredService<ProcesarDocumentsHanaUseCase>();
                 var itemsUseCase = scope.ServiceProvider
                     .GetRequiredService<ProcesarItemsHanaUseCase>();
 
                 _logger.LogInformation("Ejecutando proceso HANA → API");
 
-                var result = await useCase.ExecuteAsync(cancellationToken);
+                //var result = await useCase.ExecuteAsync(cancellationToken);
                 var itemsResult = await itemsUseCase.ExecuteAsync(cancellationToken);
 
-                if (result.IsSuccess)
-                {
-                    _logger.LogInformation(
-                        "Proceso HANA → API completado: {Message}. " +
-                        "Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
-                        result.Message,
-                        result.DocumentsProcessed,
-                        result.DocumentSent,
-                        result.DocumentFailed);
+                //if (result.IsSuccess)
+                //{
+                //    _logger.LogInformation(
+                //        "Proceso HANA → API completado: {Message}. " +
+                //        "Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
+                //        result.Message,
+                //        result.DocumentsProcessed,
+                //        result.DocumentSent,
+                //        result.DocumentFailed);
 
-                    if (result.Errors != null && result.Errors.Any())
-                    {
-                        foreach (var error in result.Errors)
-                        {
-                            _logger.LogWarning("Error en envío: {Error}", error);
-                        }
-                    }
-                }
-                else
-                {
-                    _logger.LogError(
-                        "Error en proceso HANA → API: {Error}",
-                        result.ErrorMessage);
-                }
+                //    if (result.Errors != null && result.Errors.Any())
+                //    {
+                //        foreach (var error in result.Errors)
+                //        {
+                //            _logger.LogWarning("Error en envío: {Error}", error);
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    _logger.LogError(
+                //        "Error en proceso HANA → API: {Error}",
+                //        result.ErrorMessage);
+                //}
 
                 if (itemsResult.IsSuccess)
                 {

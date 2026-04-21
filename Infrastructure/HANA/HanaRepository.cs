@@ -325,6 +325,7 @@ namespace Infrastructure.HANA
                         { "Code", "" },
                         { "Name", "" },
                         { "Transactions", item.Transaction },
+                        { "TransactionType", "" },
                         { "SapDocEntry", item.SapDocEntry },
                         { "SapDocNum", item.SapDocNum },
                         { "SapDocStatus", item.SapDocStatus },

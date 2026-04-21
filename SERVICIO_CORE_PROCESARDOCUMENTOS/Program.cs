@@ -218,7 +218,7 @@ builder.Services.AddScoped<
     ICommandHandler<Application.Commands.InsertDocumentCommand, bool>,
     Application.Handlers.InsertDocumentCommandHandler>();
 
-//SOCIOS DE NEGOCIO (CLIENTES)
+//ARTICULOS
 builder.Services.AddScoped<
     ICommandHandler<Application.Commands.GetPendingItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
     Application.Handlers.GetPendingItemsTypeCommandHandler>();

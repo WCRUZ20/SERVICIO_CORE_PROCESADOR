@@ -11,6 +11,7 @@ namespace Application.DTO
         public string Code { get; set; }
         public string Name { get; set; }
         public int Transaction { get; set; }
+        public string TransactionType { get; set; }
         public string SapDocEntry { get; set; }
         public string SapDocNum { get; set; }
         public string SapDocStatus { get; set; }
