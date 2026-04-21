@@ -67,7 +67,8 @@ namespace Infrastructure.HANA
                     { "filtro_1", "ODCP" },
                     { "filtro_2", "" },
                     { "filtro_3", "" },
-                    { "filtro_4", "" }
+                    { "filtro_4", "" },
+                    { "filtro_5", "" }
                 };
 
                 var documentsType = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapDrivinTable>(
@@ -97,7 +98,8 @@ namespace Infrastructure.HANA
                     { "filtro_1", "ITMP" },
                     { "filtro_2", "" },
                     { "filtro_3", "" },
-                    { "filtro_4", "" }
+                    { "filtro_4", "" },
+                    { "filtro_5", "" }
                 };
 
                 var itemsType = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemsTable>(
@@ -133,7 +135,8 @@ namespace Infrastructure.HANA
                     { "filtro_1", "ITMD" },
                     { "filtro_2", itemCode },
                     { "filtro_3", "" },
-                    { "filtro_4", "" }
+                    { "filtro_4", "" },
+                    { "filtro_5", "" }
                 };
 
                 var details = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemDetailDTO>(
@@ -273,6 +276,7 @@ namespace Infrastructure.HANA
                         { "Code", "" },
                         { "Name", "" },
                         { "Transactions", document.Transaction },
+                        { "TransactionType", "" },
                         { "SapDocEntry", document.SapDocEntry },
                         { "SapDocNum", document.SapDocNum },
                         { "SapDocStatus", document.SapDocStatus },
@@ -322,19 +326,19 @@ namespace Infrastructure.HANA
                 var parameters = new Dictionary<string, object>
                     {
                         { "filtro_1", "ITMI" },
-                        { "Code", "" },
-                        { "Name", "" },
-                        { "Transactions", item.Transaction },
-                        { "TransactionType", "" },
-                        { "SapDocEntry", item.SapDocEntry },
-                        { "SapDocNum", item.SapDocNum },
-                        { "SapDocStatus", item.SapDocStatus },
-                        { "Json", "" },
-                        { "CreatedBy", "" },
-                        { "UpdatedBy", "" },
-                        { "Comments", "" },
-                        { "Status", StatusHanaDocumentLevel.Inserted},
-                        { "ResultFlag", 0 }
+                        { "filtro_2", "" }, //"Code"
+                        { "filtro_3", "" }, //"Name"
+                        { "filtro_4", item.Transaction }, //"Transactions"
+                        { "filtro_5", item.TransactionType }, //"TransactionType"
+                        { "filtro_6", item.SapDocEntry }, //"SapDocEntry"
+                        { "filtro_7", item.SapDocNum }, //"SapDocNum"
+                        { "filtro_8", item.SapDocStatus }, //"SapDocStatus"
+                        { "filtro_9", "" }, //"Json"
+                        { "filtro_10", "" }, //"CreatedBy"
+                        { "filtro_11", "" }, //"UpdatedBy"
+                        { "filtro_12", "" }, //"Comments"
+                        { "filtro_13", StatusHanaDocumentLevel.Inserted}, //"Status"
+                        { "ResultFlag", 0 } //"ResultFlag"
 
 
                     };
@@ -373,7 +377,8 @@ namespace Infrastructure.HANA
                     { "filtro_1", "DPEM" },
                     { "filtro_2", "" },
                     { "filtro_3", "" },
-                    { "filtro_4", "" }
+                    { "filtro_4", "" },
+                    { "filtro_5", "" }
                 };
 
                 var documents = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapDrivinTable>(
@@ -401,7 +406,8 @@ namespace Infrastructure.HANA
                     { "filtro_1", "PITM" },
                     { "filtro_2", "" },
                     { "filtro_3", "" },
-                    { "filtro_4", "" }
+                    { "filtro_4", "" },
+                    { "filtro_5", "" }
                 };
 
                 var items = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemsTable>(
@@ -433,6 +439,7 @@ namespace Infrastructure.HANA
                         { "Code", "" },
                         { "Name", "" },
                         { "Transactions", 0 },
+                        { "TransactionType", "" },
                         { "SapDocEntry", document.SapDocEntry },
                         { "SapDocNum", document.SapDocNum },
                         { "SapDocStatus", ""},
@@ -478,17 +485,18 @@ namespace Infrastructure.HANA
                 var parameters = new Dictionary<string, object>
                     {
                         { "filtro_1", "ARIT" },
-                        { "Code", "" },
-                        { "Name", "" },
-                        { "Transactions", item.Transaction },
-                        { "SapDocEntry", item.SapDocEntry },
-                        { "SapDocNum", item.SapDocNum },
-                        { "SapDocStatus", ""},
-                        { "Json", item.Json },
-                        { "CreatedBy", "" },
-                        { "UpdatedBy", "" },
-                        { "Comments", "" },
-                        { "Status", item.Status },
+                        { "filtro_2", "" },
+                        { "filtro_3", "" },
+                        { "filtro_4", item.Transaction },
+                        { "filtro_5", "" },
+                        { "filtro_6", item.SapDocEntry },
+                        { "filtro_7", item.SapDocNum },
+                        { "filtro_8", ""},
+                        { "filtro_9", item.Json },
+                        { "filtro_10", "" },
+                        { "filtro_11", "" },
+                        { "filtro_12", "" },
+                        { "filtro_13", item.Status },
                         { "ResultFlag", 0 }
                     };
 
@@ -523,7 +531,8 @@ namespace Infrastructure.HANA
                     { "filtro_1", "OHPS" },
                     { "filtro_2", "" },
                     { "filtro_3", "" },
-                    { "filtro_4", "" }
+                    { "filtro_4", "" },
+                    { "filtro_5", "" }
                 };
 
                 var documents = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapDrivinTable>(
@@ -596,6 +605,7 @@ namespace Infrastructure.HANA
                 { "Code", "" },
                 { "Name", "" },
                 { "Transactions", transaction },
+                { "TransactionType", "" },
                 { "SapDocEntry", docEntry },
                 { "SapDocNum", docNum },
                 { "SapDocStatus", statusOrder },
@@ -639,6 +649,7 @@ namespace Infrastructure.HANA
                 { "Code", document.Code },
                 { "Name", "" },
                 { "Transactions", 0 },
+                { "TransactionType", "" },
                 { "SapDocEntry", 0 },
                 { "SapDocNum", 0 },
                 { "SapDocStatus", ""},
