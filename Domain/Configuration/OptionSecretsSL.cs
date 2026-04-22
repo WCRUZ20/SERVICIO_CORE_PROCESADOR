@@ -12,7 +12,8 @@ namespace Domain.Configuration
 
         public string ApiMiddlewareIPUrl { get; set; } = string.Empty;
         public string ProcesarDocumentoEndPoint { get; set; } = string.Empty;
-        public string? ProcesarArticuloEndPoint { get; set; }
+        public string? ProcesarArticuloClienteEndPoint { get; set; }
+        public string? ProcesarArticuloDealerEndPoint { get; set; }
 
         /// <summary>
         /// Endpoint de autenticación para obtener tokens JWT (ej: "/api/auth/login")

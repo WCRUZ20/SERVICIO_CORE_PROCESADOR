@@ -163,7 +163,7 @@ namespace Infrastructure.API
                 return (false, error);
             }
 
-            var endpoint = _secrets.ProcesarArticuloEndPoint;
+            var endpoint = _secrets.ProcesarArticuloClienteEndPoint;
 
             if (string.IsNullOrWhiteSpace(endpoint))
             {
