@@ -180,7 +180,16 @@ namespace Infrastructure.API
                 return (false, error);
             }
 
+            var baseUrl = _secrets.ApiMiddlewareIPUrl?.TrimEnd('/');
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                const string error = "ApiMiddlewareIPUrl no está configurada para el envío de artículos";
+                _logger.LogError(error);
+                return (false, error);
+            }
+
             endpoint = endpoint.TrimStart('/');
+            var requestUrl = $"{baseUrl}/{endpoint}";
 
             try
             {
@@ -188,9 +197,9 @@ namespace Infrastructure.API
                     "Enviando payload de artículo SKU={Sku}, Name={Name} al endpoint {Endpoint}",
                     item.SKU,
                     item.Name,
-                    endpoint);
+                    requestUrl);
 
-                using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+                using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
                 {
                     Content = JsonContent.Create(item)
                 };
@@ -205,7 +214,7 @@ namespace Infrastructure.API
 
                 return await ProcessResponseAsync(
                     response,
-                    endpoint,
+                    requestUrl,
                     $"SKU={item.SKU}",
                     cancellationToken);
             }
