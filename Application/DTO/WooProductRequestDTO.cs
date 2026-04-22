@@ -15,10 +15,7 @@ namespace Application.DTO
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "simple";
-
-        [JsonPropertyName("regular_price")]
+        [JsonPropertyName("regularPrice")]
         public string RegularPrice { get; set; } = "0.00";
 
         [JsonPropertyName("sku")]
@@ -26,6 +23,19 @@ namespace Application.DTO
 
         [JsonPropertyName("status")]
         public string Status { get; set; } = "draft";
+
+        [JsonPropertyName("stockQuantity")]
+        public int StockQuantity { get; set; }
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonPropertyName("manageStock")]
+        public bool ManageStock { get; set; } = true;
+
+        [JsonPropertyName("shortDescription")]
+        public string ShortDescription { get; set; } = string.Empty;
+
     }
 
 }

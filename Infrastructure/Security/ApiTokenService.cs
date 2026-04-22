@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Infrastructure.Security
 {
@@ -105,8 +106,8 @@ namespace Infrastructure.Security
                         $"Error al obtener token: {response.StatusCode}. {errorContent}");
                 }
 
-                var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(
-                    cancellationToken: cancellationToken);
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                var tokenResponse = DeserializeTokenResponse(responseContent);
 
                 if (string.IsNullOrWhiteSpace(tokenResponse?.Token))
                 {
@@ -208,11 +209,75 @@ namespace Infrastructure.Security
             return Task.CompletedTask;
         }
 
+        private TokenResponse? DeserializeTokenResponse(string responseContent)
+        {
+            if (string.IsNullOrWhiteSpace(responseContent))
+            {
+                return null;
+            }
+
+            try
+            {
+                var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(
+                    responseContent,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                if (!string.IsNullOrWhiteSpace(tokenResponse?.Token))
+                {
+                    return tokenResponse;
+                }
+
+                using var jsonDocument = JsonDocument.Parse(responseContent);
+                var root = jsonDocument.RootElement;
+
+                var token = TryGetString(root, "access_token")
+                            ?? TryGetString(root, "accessToken")
+                            ?? TryGetString(root, "token");
+
+                return string.IsNullOrWhiteSpace(token)
+                    ? null
+                    : new TokenResponse { Token = token };
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "No se pudo deserializar la respuesta de autenticación: {Response}", responseContent);
+                return null;
+            }
+        }
+
+        private static string? TryGetString(JsonElement root, string propertyName)
+        {
+            if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String)
+            {
+                return value.GetString();
+            }
+
+            return null;
+        }
+
+        private class AuthRequest
+        {
+            [JsonPropertyName("clientId")]
+            public string? ClientId { get; set; }
+
+            [JsonPropertyName("clientSecret")]
+            public string? ClientSecret { get; set; }
+        }
+
         private class TokenResponse
         {
+            [JsonPropertyName("token")]
             public string Token { get; set; } = string.Empty;
+
+            [JsonPropertyName("expiresAt")]
             public DateTime? ExpiresAt { get; set; }
+
+            [JsonPropertyName("tokenType")]
             public string? TokenType { get; set; }
         }
+
     }
 }

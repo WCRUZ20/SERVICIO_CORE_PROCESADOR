@@ -77,9 +77,12 @@ namespace Application.Handlers
             {
                 Name = (detail.ItemName ?? command.Item.Name ?? string.Empty).Trim(),
                 SKU = (detail.ItemCode ?? command.Item.SapDocEntry ?? string.Empty).Trim(),
-                Type = "simple",
                 Status = "draft",
-                RegularPrice = regularPrice
+                RegularPrice = regularPrice,
+                StockQuantity = Math.Max(0, (int)Math.Round(command.Item.Stock, MidpointRounding.AwayFromZero)),
+                Description = (detail.ItemName ?? command.Item.Name ?? string.Empty).Trim(),
+                ManageStock = true,
+                ShortDescription = (command.Item.Name ?? detail.ItemName ?? string.Empty).Trim()
             };
         }
 
