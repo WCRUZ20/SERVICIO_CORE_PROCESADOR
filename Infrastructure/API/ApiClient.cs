@@ -1,3 +1,4 @@
+using Application.Commands;
 using Application.DTO;
 using Application.Interfaces.API;
 using Domain.Configuration;
@@ -147,6 +148,7 @@ namespace Infrastructure.API
 
         public async Task<(bool IsSuccess, string? Message)> SendItemAsync(
             WooProductRequestDTO item,
+            ItemDestinationType destinationType,
             CancellationToken cancellationToken = default)
         {
             if (item == null)
@@ -163,11 +165,16 @@ namespace Infrastructure.API
                 return (false, error);
             }
 
-            var endpoint = _secrets.ProcesarArticuloClienteEndPoint;
+            var endpoint = destinationType switch
+            {
+                ItemDestinationType.Cliente => _secrets.ProcesarArticuloClienteEndPoint,
+                ItemDestinationType.Dealer => _secrets.ProcesarArticuloDealerEndPoint,
+                _ => null
+            };
 
             if (string.IsNullOrWhiteSpace(endpoint))
             {
-                const string error = "No hay endpoint configurado para articulos";
+                var error = $"No hay endpoint configurado para articulos tipo {destinationType}";
                 _logger.LogError(error);
                 return (false, error);
             }

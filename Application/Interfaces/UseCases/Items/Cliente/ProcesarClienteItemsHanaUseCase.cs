@@ -59,7 +59,8 @@ public class ProcesarClienteItemsHanaUseCase : IProcesarClienteItemsHanaUseCase
                     continue;
                 }
 
-                var sendResult = await _sendToApiHandler.HandleAsync(new SendItemsToApiCommand(item));
+                var sendResult = await _sendToApiHandler.HandleAsync(
+                    new SendItemsToApiCommand(item, ItemDestinationType.Cliente));
                 item.Status = sendResult.IsSuccess ? (int)StatusHanaDocumentLevel.Confirmed : (int)StatusHanaDocumentLevel.Error;
                 item.Json = sendResult.Message ?? string.Empty;
                 if (sendResult.IsSuccess) sent++; else failed++;

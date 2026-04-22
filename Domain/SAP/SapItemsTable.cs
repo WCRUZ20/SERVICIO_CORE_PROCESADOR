@@ -22,5 +22,6 @@ namespace Domain.SAP
         public DateTime? UpdatedDate { get; set; }
         public string Comment { get; set; }
         public int Status { get; set; }
+        public decimal Stock {  get; set; }
     }
 }

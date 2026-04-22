@@ -1,3 +1,4 @@
+using Application.Commands;
 using Application.DTO;
 using Domain.SAP;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace Application.Interfaces.API
         /// </summary>
         Task<(bool IsSuccess, string? Message)> SendItemAsync(
             WooProductRequestDTO item,
+            ItemDestinationType destinationType,
             CancellationToken cancellationToken = default);
 
         /// <summary>

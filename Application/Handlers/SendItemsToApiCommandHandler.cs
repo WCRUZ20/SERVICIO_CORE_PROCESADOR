@@ -46,7 +46,7 @@ namespace Application.Handlers
             }
 
             var payload = BuildWooPayload(command, detail);
-            var result = await _apiClient.SendItemAsync(payload);
+            var result = await _apiClient.SendItemAsync(payload, command.DestinationType);
 
 
             if (result.IsSuccess)

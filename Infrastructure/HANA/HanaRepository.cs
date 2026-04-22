@@ -20,8 +20,8 @@ namespace Infrastructure.HANA
     /// </summary>
     public class HanaRepository : IHanaRepository
     {
-        private const string TransactionTypeCliente = "1";
-        private const string TransactionTypeDealer = "2";
+        private const string TransactionTypeCliente = "2";
+        private const string TransactionTypeDealer = "1";
 
         private readonly IHanaConnectionFactory _connectionFactory;
         private readonly OdbcSettings _settings;
@@ -76,7 +76,7 @@ namespace Infrastructure.HANA
 
                 var documentsType = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapDrivinTable>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
 
@@ -108,7 +108,7 @@ namespace Infrastructure.HANA
 
                 var itemsType = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemsTable>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
 
@@ -159,7 +159,7 @@ namespace Infrastructure.HANA
 
                 var details = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemDetailDTO>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
 
@@ -200,7 +200,7 @@ namespace Infrastructure.HANA
 
                 var _listaDocumentos = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapDrivinTable>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
                 var _documento = _listaDocumentos.FirstOrDefault();
@@ -228,7 +228,7 @@ namespace Infrastructure.HANA
             int transaction,
             string docEntry,
             string docNum,
-
+            //string transaction_type,
             CancellationToken cancellationToken = default)
         {
             return await _transactionResiliencia.ExecuteAsync(async (ct) =>
@@ -248,7 +248,7 @@ namespace Infrastructure.HANA
 
                 var _listaItems = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemsTable>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
                 var _items = _listaItems.FirstOrDefault();
@@ -305,12 +305,11 @@ namespace Infrastructure.HANA
                         { "Status", StatusHanaDocumentLevel.Inserted},
                         { "ResultFlag", 0 }
 
-
                     };
 
                    var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
                    connection,
-                   "sp_integracion_sap_drivin_transactions",
+                   "sp_integracion_sap_woo_transactions",
                    parameters,
                    null,
                    ct);
@@ -356,6 +355,7 @@ namespace Infrastructure.HANA
                         { "filtro_11", "" }, //"UpdatedBy"
                         { "filtro_12", "" }, //"Comments"
                         { "filtro_13", StatusHanaDocumentLevel.Inserted}, //"Status"
+                        { "filtro_14", item.Stock },
                         { "ResultFlag", 0 } //"ResultFlag"
 
 
@@ -363,7 +363,7 @@ namespace Infrastructure.HANA
 
                 var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
                 connection,
-                "sp_integracion_sap_drivin_transactions",
+                "sp_integracion_sap_woo_transactions",
                 parameters,
                 null,
                 ct);
@@ -401,7 +401,7 @@ namespace Infrastructure.HANA
 
                 var documents = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapDrivinTable>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
 
@@ -431,7 +431,7 @@ namespace Infrastructure.HANA
 
                 var items = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemsTable>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
 
@@ -486,7 +486,7 @@ namespace Infrastructure.HANA
 
                 var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
                 connection,
-                "sp_integracion_sap_drivin_transactions",
+                "sp_integracion_sap_woo_transactions",
                 parameters,
                 null,
                 ct);
@@ -528,12 +528,13 @@ namespace Infrastructure.HANA
                         { "filtro_11", "" },
                         { "filtro_12", "" },
                         { "filtro_13", item.Status },
+                        { "filtro_14", item.Stock},
                         { "ResultFlag", 0 }
                     };
 
                 var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
                     connection,
-                    "sp_integracion_sap_drivin_transactions",
+                    "sp_integracion_sap_woo_transactions",
                     parameters,
                     null,
                     ct);
@@ -568,7 +569,7 @@ namespace Infrastructure.HANA
 
                 var documents = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapDrivinTable>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
 
@@ -598,7 +599,7 @@ namespace Infrastructure.HANA
 
                 var _listaDocumentos = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapDrivinTable>(
                     connection,
-                    "sp_integracion_sap_drivin_consultas",
+                    "sp_integracion_sap_woo_consultas",
                     parameters,
                     ct);
                 var _documento = _listaDocumentos.FirstOrDefault();
@@ -650,7 +651,7 @@ namespace Infrastructure.HANA
 
             var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
                 connection,
-                "sp_integracion_sap_drivin_transactions",
+                "sp_integracion_sap_woo_transactions",
                 parameters,
                 odbcTransaction,
                 cancellationToken);
@@ -694,7 +695,7 @@ namespace Infrastructure.HANA
 
             var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
                 connection,
-                "sp_integracion_sap_drivin_transactions",
+                "sp_integracion_sap_woo_transactions",
                 parameters,
                 odbcTransaction,
                 cancellationToken);
