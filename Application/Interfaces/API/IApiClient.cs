@@ -23,6 +23,7 @@ namespace Application.Interfaces.API
         Task<(bool IsSuccess, string? Message)> SendItemAsync(
             WooProductRequestDTO item,
             ItemDestinationType destinationType,
+            string? bearerToken = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>

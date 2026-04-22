@@ -3,6 +3,7 @@ using Application.Commands;
 using Application.DTO;
 using Application.Interfaces.API;
 using Application.Interfaces.HANA;
+using Application.Interfaces.Security;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -19,14 +20,17 @@ namespace Application.Handlers
         private readonly IApiClient _apiClient;
         private readonly IHanaRepository _hanaRepository;
         private readonly ILogger<SendItemsToApiCommandHandler> _logger;
+        private readonly IApiTokenService _apiTokenService;
 
         public SendItemsToApiCommandHandler(
             IApiClient apiClient,
             IHanaRepository hanaRepository,
+            IApiTokenService apiTokenService,
             ILogger<SendItemsToApiCommandHandler> logger)
         {
             _apiClient = apiClient;
             _hanaRepository = hanaRepository;
+            _apiTokenService = apiTokenService;
             _logger = logger;
         }
 
@@ -46,7 +50,8 @@ namespace Application.Handlers
             }
 
             var payload = BuildWooPayload(command, detail);
-            var result = await _apiClient.SendItemAsync(payload, command.DestinationType);
+            var token = await _apiTokenService.GetAccessTokenAsync();
+            var result = await _apiClient.SendItemAsync(payload, command.DestinationType, token);
 
 
             if (result.IsSuccess)

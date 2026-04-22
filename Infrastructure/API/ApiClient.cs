@@ -149,6 +149,7 @@ namespace Infrastructure.API
         public async Task<(bool IsSuccess, string? Message)> SendItemAsync(
             WooProductRequestDTO item,
             ItemDestinationType destinationType,
+            string? bearerToken = null,
             CancellationToken cancellationToken = default)
         {
             if (item == null)
@@ -189,10 +190,18 @@ namespace Infrastructure.API
                     item.Name,
                     endpoint);
 
-                using var response = await _httpClient.PostAsJsonAsync(
-                    endpoint,
-                    item,
-                    cancellationToken);
+                using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+                {
+                    Content = JsonContent.Create(item)
+                };
+
+                if (!string.IsNullOrWhiteSpace(bearerToken))
+                {
+                    request.Headers.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
+                }
+
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
 
                 return await ProcessResponseAsync(
                     response,

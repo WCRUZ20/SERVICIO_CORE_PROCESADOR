@@ -27,8 +27,11 @@ namespace Infrastructure.Security
         {
             try
             {
-                var token = await _tokenService.GetAccessTokenAsync(cancellationToken);
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                if (request.Headers.Authorization == null)
+                {
+                    var token = await _tokenService.GetAccessTokenAsync(cancellationToken);
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
             }
             catch (Exception ex)
             {
