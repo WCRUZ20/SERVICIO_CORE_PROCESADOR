@@ -7,8 +7,11 @@ using Application.Interfaces;
 using Application.Interfaces.API;
 using Application.Interfaces.HANA;
 using Application.Interfaces.Security;
+using Application.Interfaces.UseCases.Items;
 using Application.UseCases.API;
 using Application.UseCases.HANA;
+using Application.UseCases.Items.Cliente;
+using Application.UseCases.Items.Dealer;
 using Domain.Configuration;
 using Domain.SAP;
 using Infrastructure.API;
@@ -218,10 +221,14 @@ builder.Services.AddScoped<
     ICommandHandler<Application.Commands.InsertDocumentCommand, bool>,
     Application.Handlers.InsertDocumentCommandHandler>();
 
-//ARTICULOS
+//ARTICULOS CLIENTE/DEALER
 builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.GetPendingItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
-    Application.Handlers.GetPendingItemsTypeCommandHandler>();
+    ICommandHandler<Application.Commands.Cliente.GetPendingClienteItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    Application.Handlers.Cliente.GetPendingClienteItemsTypeCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<Application.Commands.Dealer.GetPendingDealerItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    Application.Handlers.Dealer.GetPendingDealerItemsTypeCommandHandler>();
 
 builder.Services.AddScoped<
     ICommandHandler<Application.Commands.CheckItemExistsCommand, bool>,
@@ -245,8 +252,12 @@ builder.Services.AddScoped<
     ICommandHandler<Application.Commands.MarkStatusDocuemntAsCommand, bool>,
     Application.Handlers.MarkStatusDocumentAsCommandHandler>();
 builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.GetPendingHanaItemsCommand, IEnumerable<SapItemsTable>>,
-    Application.Handlers.GetPendingHanaItemsCommandHandler>();
+    ICommandHandler<Application.Commands.Cliente.GetPendingClienteHanaItemsCommand, IEnumerable<SapItemsTable>>,
+    Application.Handlers.Cliente.GetPendingClienteHanaItemsCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<Application.Commands.Dealer.GetPendingDealerHanaItemsCommand, IEnumerable<SapItemsTable>>,
+    Application.Handlers.Dealer.GetPendingDealerHanaItemsCommandHandler>();
 
 builder.Services.AddScoped<
     ICommandHandler<Application.Commands.SendItemsToApiCommand, (bool IsSuccess, string? Message)>,
@@ -272,10 +283,13 @@ builder.Services.AddScoped<
 // UseCases
 // ==========================
 builder.Services.AddScoped<GetDocumentsTypeSapUseCase>();
-builder.Services.AddScoped<GetItemsSapUseCase>();
 builder.Services.AddScoped<ProcesarDocumentsHanaUseCase>();
-builder.Services.AddScoped<ProcesarItemsHanaUseCase>();
 builder.Services.AddScoped<GetHookSapUseCase>();
+builder.Services.AddScoped<IGetClienteItemsSapUseCase, GetClienteItemsSapUseCase>();
+builder.Services.AddScoped<IGetDealerItemsSapUseCase, GetDealerItemsSapUseCase>();
+builder.Services.AddScoped<IProcesarClienteItemsHanaUseCase, ProcesarClienteItemsHanaUseCase>();
+builder.Services.AddScoped<IProcesarDealerItemsHanaUseCase, ProcesarDealerItemsHanaUseCase>();
+
 
 
 // ==========================

@@ -20,6 +20,9 @@ namespace Infrastructure.HANA
     /// </summary>
     public class HanaRepository : IHanaRepository
     {
+        private const string TransactionTypeCliente = "1";
+        private const string TransactionTypeDealer = "2";
+
         private readonly IHanaConnectionFactory _connectionFactory;
         private readonly OdbcSettings _settings;
         private readonly ILogger<HanaRepository> _logger;
@@ -85,6 +88,7 @@ namespace Infrastructure.HANA
         }
 
         public async Task<IEnumerable<SapItemsTable>> GetPendingItemsTypeAsync(
+            string transactionType,
             CancellationToken cancellationToken = default)
         {
             return await _queryResilienciaItems.ExecuteAsync(async (ct) =>
@@ -96,7 +100,7 @@ namespace Infrastructure.HANA
                 var parameters = new Dictionary<string, object>
                 {
                     { "filtro_1", "ITMP" },
-                    { "filtro_2", "" },
+                    { "filtro_2", transactionType },
                     { "filtro_3", "" },
                     { "filtro_4", "" },
                     { "filtro_5", "" }
@@ -109,10 +113,24 @@ namespace Infrastructure.HANA
                     ct);
 
                 _logger.LogInformation(
-                    $"Se obtuvieron {itemsType.Count()} articulos pendientes desde HANA");
+                    "Se obtuvieron {Count} articulos pendientes desde HANA para TransactionType={TransactionType}",
+                    itemsType.Count(),
+                    transactionType);
 
                 return itemsType;
             }, cancellationToken);
+        }
+
+        public Task<IEnumerable<SapItemsTable>> GetPendingClienteItemsTypeAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return GetPendingItemsTypeAsync(TransactionTypeCliente, cancellationToken);
+        }
+
+        public Task<IEnumerable<SapItemsTable>> GetPendingDealerItemsTypeAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return GetPendingItemsTypeAsync(TransactionTypeDealer, cancellationToken);
         }
 
         public async Task<SapItemDetailDTO?> GetItemDetailByItemCodeAsync(
@@ -392,6 +410,7 @@ namespace Infrastructure.HANA
         }
 
         public async Task<IEnumerable<SapItemsTable>> GetPendingItemsAsync<TResult>(
+            string transactionType,
 
             CancellationToken cancellationToken = default) where TResult : class, new()
         {
@@ -404,7 +423,7 @@ namespace Infrastructure.HANA
                 var parameters = new Dictionary<string, object>
                 {
                     { "filtro_1", "PITM" },
-                    { "filtro_2", "" },
+                    { "filtro_2", transactionType },
                     { "filtro_3", "" },
                     { "filtro_4", "" },
                     { "filtro_5", "" }
@@ -418,6 +437,18 @@ namespace Infrastructure.HANA
 
                 return items;
             }, cancellationToken);
+        }
+
+        public Task<IEnumerable<SapItemsTable>> GetPendingClienteItemsAsync<TResult>(
+            CancellationToken cancellationToken = default) where TResult : class, new()
+        {
+            return GetPendingItemsAsync<TResult>(TransactionTypeCliente, cancellationToken);
+        }
+
+        public Task<IEnumerable<SapItemsTable>> GetPendingDealerItemsAsync<TResult>(
+            CancellationToken cancellationToken = default) where TResult : class, new()
+        {
+            return GetPendingItemsAsync<TResult>(TransactionTypeDealer, cancellationToken);
         }
 
 

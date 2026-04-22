@@ -35,7 +35,9 @@ namespace Application.Interfaces.API
             _settings = settings.Value;
         }
 
-        public async Task<ProcesarItemsResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task<ProcesarItemsResult> ExecuteAsync(
+            string transactionType,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -45,9 +47,11 @@ namespace Application.Interfaces.API
                     return new ProcesarItemsResult { IsSuccess = true, Message = "Proceso deshabilitado" };
                 }
 
-                _logger.LogInformation("Iniciando procesamiento de articulos desde HANA -> API");
+                _logger.LogInformation(
+                    "Iniciando procesamiento de articulos desde HANA -> API para TransactionType={TransactionType}",
+                    transactionType);
 
-                var getCommand = new GetPendingHanaItemsCommand();
+                var getCommand = new GetPendingHanaItemsCommand(transactionType);
                 var items = await _getItemsHandler.HandleAsync(getCommand);
                 var itemsList = items.ToList();
 

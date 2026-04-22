@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 
 namespace Application.Commands
 {
-    public record GetPendingHanaItemsCommand()
+    public record GetPendingHanaItemsCommand(string TransactionType)
         : ICommand<IEnumerable<SapItemsTable>>;
 }

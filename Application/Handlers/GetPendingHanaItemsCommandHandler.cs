@@ -27,8 +27,10 @@ namespace Application.Handlers
 
         public async Task<IEnumerable<SapItemsTable>> HandleAsync(GetPendingHanaItemsCommand command)
         {
-            _logger.LogInformation("Obteniendo articulos pendientes desde HANA -> API");
-            return await _hanaRepository.GetPendingItemsAsync<SapItemsTable>();
+            _logger.LogInformation(
+                 "Obteniendo articulos pendientes desde HANA -> API para TransactionType={TransactionType}",
+                 command.TransactionType);
+            return await _hanaRepository.GetPendingItemsAsync<SapItemsTable>(command.TransactionType);
         }
     }
 }

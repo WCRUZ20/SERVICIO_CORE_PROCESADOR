@@ -1,5 +1,6 @@
 
 using Application.Interfaces.API;
+using Application.Interfaces.UseCases.Items;
 using Application.UseCases.API;
 using Application.UseCases.HANA;
 using Domain.Configuration;
@@ -55,12 +56,14 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
                     // ============================================
                     // PROCESO 1: SAP (ODBC) → HANA
                     // ============================================
-                    await ExecuteSapToHanaProcessAsync(scope, stoppingToken);
+                    await ExecuteSapToHanaClienteProcessAsync(scope, stoppingToken);
+                    await ExecuteSapToHanaDealerProcessAsync(scope, stoppingToken);
 
                     // ============================================
                     // PROCESO 2: HANA → API MIDDLEWARE
                     // ============================================
-                    await ExecuteHanaToApiProcessAsync(scope, stoppingToken);
+                    await ExecuteHanaToApiClienteProcessAsync(scope, stoppingToken);
+                    await ExecuteHanaToApiDealerProcessAsync(scope, stoppingToken);
 
                     // ============================================
                     // PROCESO 3: API MIDDLEWARE → HANA
@@ -90,125 +93,99 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
         /// <summary>
         /// Ejecuta el proceso de obtención de documentos desde SAP e inserción en HANA
         /// </summary>
-        private async Task ExecuteSapToHanaProcessAsync(
+        private async Task ExecuteSapToHanaClienteProcessAsync(
             IServiceScope scope,
             CancellationToken cancellationToken)
         {
-            #region "base caso"
-            //var useCase = scope.ServiceProvider
-            //    .GetRequiredService<GetDocumentsTypeSapUseCase>();
-
-            //_logger.LogInformation("Ejecutando proceso SAP → HANA");
-
-            //var result = await useCase.ExecuteAsync(cancellationToken);
-
-            //if (result.IsSuccess)
-            //{
-            //    _logger.LogInformation(
-            //        $"Proceso SAP → HANA completado: {result.Message}. " +
-            //        $"Encontradas: {result.DocumentsFound}, Insertadas: {result.DocumentsInserted}"
-            //        );
-            //}
-            //else
-            //{
-            //    _logger.LogError(
-            //        $"Error en proceso SAP → HANA: {result.Message}");
-            //}
-            #endregion
-
-            var useCaseArticulo = scope.ServiceProvider
-                    .GetRequiredService<GetItemsSapUseCase>();
-
-            _logger.LogInformation("Ejecutando proceso SAP → HANA");
-
+            var useCaseArticulo = scope.ServiceProvider.GetRequiredService<IGetClienteItemsSapUseCase>();
+            _logger.LogInformation("Ejecutando PROCESO ONLINE (CLIENTE) SAP → HANA");
             var resultAticulo = await useCaseArticulo.ExecuteAsync(cancellationToken);
 
             if (resultAticulo.IsSuccess)
             {
                 _logger.LogInformation(
-                    $"Proceso SAP → HANA completado: {resultAticulo.Message}. " +
-                    $"Encontradas: {resultAticulo.ItemsFound}, Insertadas: {resultAticulo.ItemsInserted}"
-                    );
+                $"Proceso ONLINE (CLIENTE) SAP → HANA completado: {resultAticulo.Message}. " +
+                $"Encontradas: {resultAticulo.ItemsFound}, Insertadas: {resultAticulo.ItemsInserted}"
+                );
             }
             else
             {
                 _logger.LogError(
-                    $"Error en proceso SAP → HANA: {resultAticulo.Message}");
+                    $"Error en proceso ONLINE (CLIENTE) SAP → HANA: {resultAticulo.Message}");
             }
 
+        }
+
+        private async Task ExecuteSapToHanaDealerProcessAsync(
+            IServiceScope scope,
+            CancellationToken cancellationToken)
+        {
+            var useCaseArticulo = scope.ServiceProvider.GetRequiredService<IGetDealerItemsSapUseCase>();
+            _logger.LogInformation("Ejecutando PROCESO DEALER SAP → HANA");
+            var resultAticulo = await useCaseArticulo.ExecuteAsync(cancellationToken);
+
+            if (resultAticulo.IsSuccess)
+            {
+                _logger.LogInformation(
+                $"Proceso DEALER SAP → HANA completado: {resultAticulo.Message}. " +
+                $"Encontradas: {resultAticulo.ItemsFound}, Insertadas: {resultAticulo.ItemsInserted}"
+                );
+            }
+            else
+            {
+                _logger.LogError(
+                    $"Error en proceso DEALER SAP → HANA: {resultAticulo.Message}");
+            }
         }
 
         /// <summary>
         /// Ejecuta el proceso de lectura desde HANA y envío a API externa
         /// </summary>
-        private async Task ExecuteHanaToApiProcessAsync(
+        private async Task ExecuteHanaToApiClienteProcessAsync(
             IServiceScope scope,
             CancellationToken cancellationToken)
         {
-            try
+            var itemsUseCase = scope.ServiceProvider.GetRequiredService<IProcesarClienteItemsHanaUseCase>();
+            _logger.LogInformation("Ejecutando PROCESO ONLINE (CLIENTE) HANA → API");
+            var itemsResult = await itemsUseCase.ExecuteAsync(cancellationToken);
+
+            if (itemsResult.IsSuccess)
             {
-                //var useCase = scope.ServiceProvider
-                //    .GetRequiredService<ProcesarDocumentsHanaUseCase>();
-                var itemsUseCase = scope.ServiceProvider
-                    .GetRequiredService<ProcesarItemsHanaUseCase>();
-
-                _logger.LogInformation("Ejecutando proceso HANA → API");
-
-                //var result = await useCase.ExecuteAsync(cancellationToken);
-                var itemsResult = await itemsUseCase.ExecuteAsync(cancellationToken);
-
-                //if (result.IsSuccess)
-                //{
-                //    _logger.LogInformation(
-                //        "Proceso HANA → API completado: {Message}. " +
-                //        "Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
-                //        result.Message,
-                //        result.DocumentsProcessed,
-                //        result.DocumentSent,
-                //        result.DocumentFailed);
-
-                //    if (result.Errors != null && result.Errors.Any())
-                //    {
-                //        foreach (var error in result.Errors)
-                //        {
-                //            _logger.LogWarning("Error en envío: {Error}", error);
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    _logger.LogError(
-                //        "Error en proceso HANA → API: {Error}",
-                //        result.ErrorMessage);
-                //}
-
-                if (itemsResult.IsSuccess)
-                {
-                    _logger.LogInformation(
-                        "Proceso HANA → API ARTICULOS completado: {Message}. " +
-                        "Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
-                        itemsResult.Message,
-                        itemsResult.ItemsProcessed,
-                        itemsResult.ItemsSent,
-                        itemsResult.ItemsFailed);
-                }
-                else
-                {
-                    _logger.LogError(
-                        "Error en proceso HANA → API ARTICULOS: {Error}",
-                        itemsResult.ErrorMessage);
-                }
+                _logger.LogInformation(
+                    "Proceso ONLINE (CLIENTE) HANA → API ARTICULOS completado: {Message}. Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
+                    itemsResult.Message,
+                    itemsResult.ItemsProcessed,
+                    itemsResult.ItemsSent,
+                    itemsResult.ItemsFailed);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(
-                    ex,
-                    "Excepción en proceso HANA → API");
-                throw;
+                _logger.LogError("Error en proceso ONLINE (CLIENTE) HANA → API ARTICULOS: {Error}", itemsResult.ErrorMessage);
             }
         }
 
+        private async Task ExecuteHanaToApiDealerProcessAsync(
+            IServiceScope scope,
+            CancellationToken cancellationToken)
+        {
+            var itemsUseCase = scope.ServiceProvider.GetRequiredService<IProcesarDealerItemsHanaUseCase>();
+            _logger.LogInformation("Ejecutando PROCESO DEALER HANA → API");
+            var itemsResult = await itemsUseCase.ExecuteAsync(cancellationToken);
 
+            if (itemsResult.IsSuccess)
+            {
+                _logger.LogInformation(
+                    "Proceso DEALER HANA → API ARTICULOS completado: {Message}. Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
+                    itemsResult.Message,
+                    itemsResult.ItemsProcessed,
+                    itemsResult.ItemsSent,
+                    itemsResult.ItemsFailed);
+            }
+            else
+            {
+                _logger.LogError("Error en proceso DEALER HANA → API ARTICULOS: {Error}", itemsResult.ErrorMessage);
+            }
+        }
 
         /// <summary>
         /// Ejecuta el proceso de lectura desde HANA HOOK y actualiza el documento en SAP

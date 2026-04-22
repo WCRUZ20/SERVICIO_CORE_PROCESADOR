@@ -34,15 +34,18 @@ namespace Application.Handlers
             GetPendingItemsTypeCommand command)
         {
             _logger.LogInformation(
-                "Obteniendo articulos pendientes");
+                "Obteniendo articulos pendientes para TransactionType={TransactionType}",
+                command.TransactionType);
 
             // Obtener entidades de dominio desde el Repository
-            var entities = await _hanaRepository.GetPendingItemsTypeAsync();
+            var entities = await _hanaRepository.GetPendingItemsTypeAsync(command.TransactionType);
 
             var entityList = entities.ToList();
 
             _logger.LogInformation(
-                $"Se encontraron {entityList.Count} articulos pendientes");
+                "Se encontraron {Count} articulos pendientes para TransactionType={TransactionType}",
+                entityList.Count,
+                command.TransactionType);
 
             // Convertir entidades a DTOs usando Mapster
             var dtos = _mapper.Map<List<SapItemQueeDTO>>(entityList);

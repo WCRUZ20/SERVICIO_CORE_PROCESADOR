@@ -39,7 +39,9 @@ namespace Application.UseCases.HANA
             _settings = settings.Value;
         }
 
-        public async Task<ObtenerItemsResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task<ObtenerItemsResult> ExecuteAsync(
+            string transactionType,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -50,12 +52,13 @@ namespace Application.UseCases.HANA
                 }
 
                 _logger.LogInformation(
-                    $"Iniciando obtención de items desde SAP");
+                    "Iniciando obtención de items desde SAP para TransactionType={TransactionType}",
+                    transactionType);
 
                 try
                 {
                     // 1. Obtener articulos (retorna DTOs)
-                    var getCommand = new GetPendingItemsTypeCommand();
+                    var getCommand = new GetPendingItemsTypeCommand(transactionType);
                     var items = await _getItemsHandler.HandleAsync(getCommand);
                     var itemsList = items.ToList();
 

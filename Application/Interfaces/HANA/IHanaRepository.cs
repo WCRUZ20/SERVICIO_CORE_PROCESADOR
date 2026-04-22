@@ -46,6 +46,13 @@ namespace Application.Interfaces.HANA
         /// Obtiene Transacciones pendientes de procesamiento desde SAP
         /// </summary>
         Task<IEnumerable<SapItemsTable>> GetPendingItemsTypeAsync(
+            string transactionType,
+            CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<SapItemsTable>> GetPendingClienteItemsTypeAsync(
+            CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<SapItemsTable>> GetPendingDealerItemsTypeAsync(
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -60,6 +67,13 @@ namespace Application.Interfaces.HANA
         /// </summary>
         /// 
         Task<IEnumerable<SapItemsTable>> GetPendingItemsAsync<TResult>(
+            string transactionType,
+            CancellationToken cancellationToken = default) where TResult : class, new();
+
+        Task<IEnumerable<SapItemsTable>> GetPendingClienteItemsAsync<TResult>(
+            CancellationToken cancellationToken = default) where TResult : class, new();
+
+        Task<IEnumerable<SapItemsTable>> GetPendingDealerItemsAsync<TResult>(
             CancellationToken cancellationToken = default) where TResult : class, new();
 
         /// <summary>
