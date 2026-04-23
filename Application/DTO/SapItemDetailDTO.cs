@@ -14,6 +14,16 @@ namespace Application.DTO
         public string? ItemCode { get; set; }
         public string? ItemName { get; set; }
         public decimal? Price { get; set; }
+        public string? name {  get; set; }
+        public string? sku { get; set; }
+        public string? regularPrice {  get; set; }
+        public decimal? stockQuantity {  get; set; }
+        public string? status {  get; set; }
+        public string? type { get; set; }
+        public string? description {  get; set; }
+        public bool manageStock { get; set; } = true;
+        public string? shortDescription { get; set; }
+
     }
 
 }
