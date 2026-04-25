@@ -258,15 +258,6 @@ namespace Infrastructure.Security
             return null;
         }
 
-        private class AuthRequest
-        {
-            [JsonPropertyName("clientId")]
-            public string? ClientId { get; set; }
-
-            [JsonPropertyName("clientSecret")]
-            public string? ClientSecret { get; set; }
-        }
-
         private class TokenResponse
         {
             [JsonPropertyName("token")]
