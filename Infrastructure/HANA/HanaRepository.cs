@@ -356,6 +356,7 @@ namespace Infrastructure.HANA
                         { "filtro_12", "" }, //"Comments"
                         { "filtro_13", StatusHanaDocumentLevel.Inserted}, //"Status"
                         { "filtro_14", item.Stock },
+                        { "filtro_15", ""},
                         { "ResultFlag", 0 } //"ResultFlag"
 
 
@@ -423,7 +424,7 @@ namespace Infrastructure.HANA
                 var parameters = new Dictionary<string, object>
                 {
                     { "filtro_1", "PITM" },
-                    { "filtro_2", transactionType },
+                    { "filtro_2", transactionType.ToString() },
                     { "filtro_3", "" },
                     { "filtro_4", "" },
                     { "filtro_5", "" }
@@ -529,6 +530,7 @@ namespace Infrastructure.HANA
                         { "filtro_12", "" },
                         { "filtro_13", item.Status },
                         { "filtro_14", item.Stock},
+                        { "filtro_15", item.idWoo},
                         { "ResultFlag", 0 }
                     };
 

@@ -23,5 +23,6 @@ namespace Domain.SAP
         public string Comment { get; set; }
         public int Status { get; set; }
         public decimal Stock {  get; set; }
+        public string idWoo { get; set; }
     }
 }

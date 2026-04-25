@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions;
 using Application.Commands;
 using Application.Commands.Cliente;
+using Application.DTO;
 using Application.Interfaces.API;
 using Application.Interfaces.UseCases.Items;
 using Domain.Configuration;
@@ -8,6 +9,7 @@ using Domain.Helper;
 using Domain.SAP;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace Application.UseCases.Items.Cliente;
 
@@ -63,6 +65,17 @@ public class ProcesarClienteItemsHanaUseCase : IProcesarClienteItemsHanaUseCase
                     new SendItemsToApiCommand(item, ItemDestinationType.Cliente));
                 item.Status = sendResult.IsSuccess ? (int)StatusHanaDocumentLevel.Confirmed : (int)StatusHanaDocumentLevel.Error;
                 item.Json = sendResult.Message ?? string.Empty;
+                if (sendResult.IsSuccess && !string.IsNullOrWhiteSpace(sendResult.Message))
+                {
+                    var response = JsonSerializer.Deserialize<WooProductResponse>(
+                        sendResult.Message,
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+
+                    item.idWoo = response?.Id.ToString();
+                }
                 if (sendResult.IsSuccess) sent++; else failed++;
                 await _markStatusItemAsHandler.HandleAsync(new MarkStatusItemAsCommand(item));
             }
