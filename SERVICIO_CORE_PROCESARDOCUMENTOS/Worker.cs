@@ -68,7 +68,7 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
                     // ============================================
                     // PROCESO 3: API MIDDLEWARE → HANA
                     // ============================================
-                    //await ExecuteHookToSAPDocumentProcessAsync(scope, stoppingToken);
+                    await ExecuteHookToSAPDocumentProcessAsync(scope, stoppingToken);
 
                     stopwatch.Stop();
 
@@ -187,56 +187,54 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
             }
         }
 
-        #region "Hooks (No se utiliza)"
-        ///// <summary>
-        ///// Ejecuta el proceso de lectura desde HANA HOOK y actualiza el documento en SAP
-        ///// </summary>
-        //private async Task ExecuteHookToSAPDocumentProcessAsync(
-        //    IServiceScope scope,
-        //    CancellationToken cancellationToken)
-        //{
-        //    try
-        //    {
-        //        var useCase = scope.ServiceProvider
-        //            .GetRequiredService<GetHookSapUseCase>();
+        /// <summary>
+        /// Ejecuta el proceso de lectura desde HANA HOOK y actualiza el documento en SAP
+        /// </summary>
+        private async Task ExecuteHookToSAPDocumentProcessAsync(
+            IServiceScope scope,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var useCase = scope.ServiceProvider
+                    .GetRequiredService<GetHookSapUseCase>();
 
-        //        _logger.LogInformation("Ejecutando proceso HANA → SAP");
+                _logger.LogInformation("Ejecutando proceso HANA → SAP");
 
-        //        var result = await useCase.ExecuteAsync(cancellationToken);
+                var result = await useCase.ExecuteAsync(cancellationToken);
 
-        //        if (result.IsSuccess)
-        //        {
-        //            //_logger.LogInformation(
-        //            //    "Proceso HANA → SAP completado: {Message}. " +
-        //            //    "Procesadas: {Processed}, Enviadas: {Sent}",
-        //            //    result.Message,
-        //            //    result.HooksFound,
-        //            //    result.HooksChanged
-        //            //    );
+                if (result.IsSuccess)
+                {
+                    //_logger.LogInformation(
+                    //    "Proceso HANA → SAP completado: {Message}. " +
+                    //    "Procesadas: {Processed}, Enviadas: {Sent}",
+                    //    result.Message,
+                    //    result.HooksFound,
+                    //    result.HooksChanged
+                    //    );
 
-        //            //if (result.Errors != null && result.Errors.Any())
-        //            //{
-        //            //    foreach (var error in result.Errors)
-        //            //    {
-        //            //        _logger.LogWarning("Error en envío: {Error}", error);
-        //            //    }
-        //            //}
-        //        }
-        //        else
-        //        {
-        //            //_logger.LogError(
-        //            //    "Error en proceso HANA → API: {Error}",
-        //            //    result.ErrorMessage);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(
-        //            ex,
-        //            "Excepción en proceso HANA → API");
-        //        throw;
-        //    }
-        //}
-        #endregion
+                    //if (result.Errors != null && result.Errors.Any())
+                    //{
+                    //    foreach (var error in result.Errors)
+                    //    {
+                    //        _logger.LogWarning("Error en envío: {Error}", error);
+                    //    }
+                    //}
+                }
+                else
+                {
+                    //_logger.LogError(
+                    //    "Error en proceso HANA → API: {Error}",
+                    //    result.ErrorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Excepción en proceso HANA → API");
+                throw;
+            }
+        }
     }
 }

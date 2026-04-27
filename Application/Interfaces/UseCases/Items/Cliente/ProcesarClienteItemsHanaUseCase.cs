@@ -76,6 +76,7 @@ public class ProcesarClienteItemsHanaUseCase : IProcesarClienteItemsHanaUseCase
 
                     item.idWoo = response?.Id.ToString();
                 }
+
                 if (sendResult.IsSuccess) sent++; else failed++;
                 await _markStatusItemAsHandler.HandleAsync(new MarkStatusItemAsCommand(item));
             }
