@@ -3,7 +3,7 @@ using Application.Commands;
 using Application.Commands.Cliente;
 using Application.DTO;
 using Application.Interfaces.API;
-using Application.Interfaces.UseCases.Items;
+using Application.Interfaces.UseCases.Items.Cliente;
 using Domain.Configuration;
 using Domain.Helper;
 using Domain.SAP;
@@ -39,7 +39,7 @@ public class ProcesarClienteItemsHanaUseCase : IProcesarClienteItemsHanaUseCase
     {
         try
         {
-            if (_settings.processDocumentSAP?.IsEnableFlag != 1)
+            if (_settings.processItemClienteSAP?.IsEnableFlag != 1)
             {
                 return new ProcesarItemsResult { IsSuccess = true, Message = "Proceso CLIENTE deshabilitado" };
             }

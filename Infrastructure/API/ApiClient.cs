@@ -71,80 +71,80 @@ namespace Infrastructure.API
         /// <summary>
         /// Envía un documento SAP a la API externa
         /// </summary>
-        public async Task<(bool IsSuccess, string? Message)> SendDocumentAsync(
-            SapDrivinTable document,
-            CancellationToken cancellationToken = default)
-        {
-            // Validar entrada
-            if (document == null)
-            {
-                const string error = "El documento no puede ser null";
-                _logger.LogWarning(error);
-                return (false, error);
-            }
+        //public async Task<(bool IsSuccess, string? Message)> SendDocumentAsync(
+        //    SapDrivinTable document,
+        //    CancellationToken cancellationToken = default)
+        //{
+        //    // Validar entrada
+        //    if (document == null)
+        //    {
+        //        const string error = "El documento no puede ser null";
+        //        _logger.LogWarning(error);
+        //        return (false, error);
+        //    }
 
-            if (document.SapDocEntry <= 0)
-            {
-                var error = $"SapDocEntry inválido: {document.SapDocEntry}";
-                _logger.LogWarning(error);
-                return (false, error);
-            }
+        //    if (document.SapDocEntry <= 0)
+        //    {
+        //        var error = $"SapDocEntry inválido: {document.SapDocEntry}";
+        //        _logger.LogWarning(error);
+        //        return (false, error);
+        //    }
 
-            // Validar endpoint
-            if (string.IsNullOrWhiteSpace(_secrets.ProcesarDocumentoEndPoint))
-            {
-                const string error = "GetSapDrivinTableEndPoint no está configurado";
-                _logger.LogError(error);
-                return (false, error);
-            }
+        //    // Validar endpoint
+        //    if (string.IsNullOrWhiteSpace(_secrets.ProcesarDocumentoEndPoint))
+        //    {
+        //        const string error = "GetSapDrivinTableEndPoint no está configurado";
+        //        _logger.LogError(error);
+        //        return (false, error);
+        //    }
 
-            var endpoint = _secrets.ProcesarDocumentoEndPoint.TrimStart('/');
+        //    var endpoint = _secrets.ProcesarDocumentoEndPoint.TrimStart('/');
             
-            try
-            {
-                _logger.LogInformation(
-                    "Enviando documento SapDocEntry={SapDocEntry}, SapDocNum={SapDocNum} al endpoint {Endpoint}",
-                    document.SapDocEntry,
-                    document.SapDocNum,
-                    endpoint);
-                var json = JsonSerializer.Serialize(document, _jsonOptions);
-                using var response = await _httpClient.PostAsJsonAsync(
-                    endpoint,
-                    document,
-                    //_jsonOptions,
-                    cancellationToken);
+        //    try
+        //    {
+        //        _logger.LogInformation(
+        //            "Enviando documento SapDocEntry={SapDocEntry}, SapDocNum={SapDocNum} al endpoint {Endpoint}",
+        //            document.SapDocEntry,
+        //            document.SapDocNum,
+        //            endpoint);
+        //        var json = JsonSerializer.Serialize(document, _jsonOptions);
+        //        using var response = await _httpClient.PostAsJsonAsync(
+        //            endpoint,
+        //            document,
+        //            //_jsonOptions,
+        //            cancellationToken);
 
-                return await ProcessResponseAsync(
-                    response,
-                    endpoint,
-                    $"SapDocEntry={document.SapDocEntry}",
-                    cancellationToken);
-            }
-            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
-            {
-                var errorMessage = $"Timeout al enviar documento SapDocEntry={document.SapDocEntry}";
-                _logger.LogError(ex, $"{errorMessage}. Timeout configurado: {DefaultTimeoutSeconds} segundos");
-                return (false, errorMessage);
-            }
-            catch (TaskCanceledException ex)
-            {
-                var errorMessage = $"Operación cancelada al enviar documento SapDocEntry={document.SapDocEntry}";
-                _logger.LogWarning(ex, errorMessage);
-                return (false, errorMessage);
-            }
-            catch (HttpRequestException ex)
-            {
-                var errorMessage = $"Error de comunicación con la API: {ex.Message}";
-                _logger.LogError(ex, $"{errorMessage} para documento SapDocEntry={document.SapDocEntry}");
-                return (false, errorMessage);
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = $"Error inesperado: {ex.Message}";
-                _logger.LogError( ex,$"{errorMessage} al enviar documento SapDocEntry={document.SapDocEntry}");
-                return (false, errorMessage);
-            }
-        }
+        //        return await ProcessResponseAsync(
+        //            response,
+        //            endpoint,
+        //            $"SapDocEntry={document.SapDocEntry}",
+        //            cancellationToken);
+        //    }
+        //    catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+        //    {
+        //        var errorMessage = $"Timeout al enviar documento SapDocEntry={document.SapDocEntry}";
+        //        _logger.LogError(ex, $"{errorMessage}. Timeout configurado: {DefaultTimeoutSeconds} segundos");
+        //        return (false, errorMessage);
+        //    }
+        //    catch (TaskCanceledException ex)
+        //    {
+        //        var errorMessage = $"Operación cancelada al enviar documento SapDocEntry={document.SapDocEntry}";
+        //        _logger.LogWarning(ex, errorMessage);
+        //        return (false, errorMessage);
+        //    }
+        //    catch (HttpRequestException ex)
+        //    {
+        //        var errorMessage = $"Error de comunicación con la API: {ex.Message}";
+        //        _logger.LogError(ex, $"{errorMessage} para documento SapDocEntry={document.SapDocEntry}");
+        //        return (false, errorMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var errorMessage = $"Error inesperado: {ex.Message}";
+        //        _logger.LogError( ex,$"{errorMessage} al enviar documento SapDocEntry={document.SapDocEntry}");
+        //        return (false, errorMessage);
+        //    }
+        //}
 
         public async Task<(bool IsSuccess, string? Message)> SendItemAsync(
             WooProductRequestDTO item,

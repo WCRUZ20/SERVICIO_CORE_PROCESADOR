@@ -13,9 +13,9 @@ namespace Application.Interfaces.API
         /// <summary>
         /// Envía una transferencia de stock a la API externa
         /// </summary>
-        Task<(bool IsSuccess, string? Message)> SendDocumentAsync(
-            SapDrivinTable document, 
-            CancellationToken cancellationToken = default);
+        //Task<(bool IsSuccess, string? Message)> SendDocumentAsync(
+        //    SapDrivinTable document, 
+        //    CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Envía un artículo a la API externa

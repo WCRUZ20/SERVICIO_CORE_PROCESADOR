@@ -3,7 +3,7 @@ using Application.Commands;
 using Application.Commands.Dealer;
 using Application.DTO;
 using Application.Interfaces.API;
-using Application.Interfaces.UseCases.Items;
+using Application.Interfaces.UseCases.Items.Dealer;
 using Domain.Configuration;
 using Domain.Helper;
 using Domain.SAP;
@@ -39,7 +39,7 @@ public class ProcesarDealerItemsHanaUseCase : IProcesarDealerItemsHanaUseCase
     {
         try
         {
-            if (_settings.processDocumentSAP?.IsEnableFlag != 1)
+            if (_settings.processItemDealerSAP?.IsEnableFlag != 1)
             {
                 return new ProcesarItemsResult { IsSuccess = true, Message = "Proceso DEALER deshabilitado" };
             }

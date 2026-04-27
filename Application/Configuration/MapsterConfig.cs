@@ -36,14 +36,14 @@ namespace Application.Configuration
 
 
             // Configuración de mapeo de StockTransferSAP a StockTransferDTO
-            TypeAdapterConfig<SapDrivinTable, SapDrivinTableDTO>
-                .NewConfig()
+            //TypeAdapterConfig<SapDrivinTable, SapDrivinTableDTO>
+            //    .NewConfig()
                 //.Map(dest => dest.Lines, src => src.StockTransferLines)
                 /*.IgnoreIf((src, dest) => src.StockTransferLines == null, dest => dest.Lines)*/;
 
             // Configuración de mapeo de StockTransferDTO a StockTransferSAP
-            TypeAdapterConfig<SapDrivinTableDTO, SapDrivinTable>
-                .NewConfig()
+            //TypeAdapterConfig<SapDrivinTableDTO, SapDrivinTable>
+            //    .NewConfig()
                 //.Map(dest => dest.StockTransferLines, src => src.Lines)
                 /*.IgnoreIf((src, dest) => src.Lines == null, dest => dest.StockTransferLines)*/;
 

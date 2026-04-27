@@ -1,7 +1,7 @@
 
 using Application.Interfaces.API;
-using Application.Interfaces.UseCases.Items;
-using Application.UseCases.API;
+using Application.Interfaces.UseCases.Items.Cliente;
+using Application.Interfaces.UseCases.Items.Dealer;
 using Application.UseCases.HANA;
 using Domain.Configuration;
 using Microsoft.Extensions.Options;
@@ -54,21 +54,16 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
                     using var scope = _scopeFactory.CreateScope();
 
                     // ============================================
-                    // PROCESO 1: SAP (ODBC) → HANA
+                    // PROCESO 1: SAP (ODBC) → COLA
                     // ============================================
                     await ExecuteSapToHanaClienteProcessAsync(scope, stoppingToken);
                     await ExecuteSapToHanaDealerProcessAsync(scope, stoppingToken);
 
                     // ============================================
-                    // PROCESO 2: HANA → API MIDDLEWARE
+                    // PROCESO 2: COLA → API MIDDLEWARE (Intermediario Woocommerce)
                     // ============================================
                     await ExecuteHanaToApiClienteProcessAsync(scope, stoppingToken);
                     await ExecuteHanaToApiDealerProcessAsync(scope, stoppingToken);
-
-                    // ============================================
-                    // PROCESO 3: API MIDDLEWARE → HANA
-                    // ============================================
-                    await ExecuteHookToSAPDocumentProcessAsync(scope, stoppingToken);
 
                     stopwatch.Stop();
 
@@ -91,11 +86,9 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
         }
 
         /// <summary>
-        /// Ejecuta el proceso de obtención de documentos desde SAP e inserción en HANA
+        /// Ejecuta el proceso de obtención de articulos desde SAP e inserción en COLA
         /// </summary>
-        private async Task ExecuteSapToHanaClienteProcessAsync(
-            IServiceScope scope,
-            CancellationToken cancellationToken)
+        private async Task ExecuteSapToHanaClienteProcessAsync(IServiceScope scope, CancellationToken cancellationToken)
         {
             var useCaseArticulo = scope.ServiceProvider.GetRequiredService<IGetClienteItemsSapUseCase>();
             _logger.LogInformation("Ejecutando PROCESO ONLINE (CLIENTE) SAP → HANA");
@@ -116,9 +109,7 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
 
         }
 
-        private async Task ExecuteSapToHanaDealerProcessAsync(
-            IServiceScope scope,
-            CancellationToken cancellationToken)
+        private async Task ExecuteSapToHanaDealerProcessAsync(IServiceScope scope,CancellationToken cancellationToken)
         {
             var useCaseArticulo = scope.ServiceProvider.GetRequiredService<IGetDealerItemsSapUseCase>();
             _logger.LogInformation("Ejecutando PROCESO DEALER SAP → HANA");
@@ -141,9 +132,7 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
         /// <summary>
         /// Ejecuta el proceso de lectura desde HANA y envío a API externa
         /// </summary>
-        private async Task ExecuteHanaToApiClienteProcessAsync(
-            IServiceScope scope,
-            CancellationToken cancellationToken)
+        private async Task ExecuteHanaToApiClienteProcessAsync(IServiceScope scope, CancellationToken cancellationToken)
         {
             var itemsUseCase = scope.ServiceProvider.GetRequiredService<IProcesarClienteItemsHanaUseCase>();
             _logger.LogInformation("Ejecutando PROCESO ONLINE (CLIENTE) HANA → API");
@@ -164,9 +153,7 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
             }
         }
 
-        private async Task ExecuteHanaToApiDealerProcessAsync(
-            IServiceScope scope,
-            CancellationToken cancellationToken)
+        private async Task ExecuteHanaToApiDealerProcessAsync(IServiceScope scope, CancellationToken cancellationToken)
         {
             var itemsUseCase = scope.ServiceProvider.GetRequiredService<IProcesarDealerItemsHanaUseCase>();
             _logger.LogInformation("Ejecutando PROCESO DEALER HANA → API");
@@ -187,54 +174,5 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
             }
         }
 
-        /// <summary>
-        /// Ejecuta el proceso de lectura desde HANA HOOK y actualiza el documento en SAP
-        /// </summary>
-        private async Task ExecuteHookToSAPDocumentProcessAsync(
-            IServiceScope scope,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var useCase = scope.ServiceProvider
-                    .GetRequiredService<GetHookSapUseCase>();
-
-                _logger.LogInformation("Ejecutando proceso HANA → SAP");
-
-                var result = await useCase.ExecuteAsync(cancellationToken);
-
-                if (result.IsSuccess)
-                {
-                    //_logger.LogInformation(
-                    //    "Proceso HANA → SAP completado: {Message}. " +
-                    //    "Procesadas: {Processed}, Enviadas: {Sent}",
-                    //    result.Message,
-                    //    result.HooksFound,
-                    //    result.HooksChanged
-                    //    );
-
-                    //if (result.Errors != null && result.Errors.Any())
-                    //{
-                    //    foreach (var error in result.Errors)
-                    //    {
-                    //        _logger.LogWarning("Error en envío: {Error}", error);
-                    //    }
-                    //}
-                }
-                else
-                {
-                    //_logger.LogError(
-                    //    "Error en proceso HANA → API: {Error}",
-                    //    result.ErrorMessage);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Excepción en proceso HANA → API");
-                throw;
-            }
-        }
     }
 }

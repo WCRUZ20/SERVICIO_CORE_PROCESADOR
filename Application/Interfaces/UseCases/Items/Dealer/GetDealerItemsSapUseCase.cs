@@ -2,7 +2,7 @@
 using Application.Commands;
 using Application.Commands.Dealer;
 using Application.DTO;
-using Application.Interfaces.UseCases.Items;
+using Application.Interfaces.UseCases.Items.Dealer;
 using Application.UseCases.HANA;
 using Domain.Configuration;
 using Microsoft.Extensions.Logging;
@@ -36,7 +36,7 @@ public class GetDealerItemsSapUseCase : IGetDealerItemsSapUseCase
     {
         try
         {
-            if (_settings.getDocumentSAP?.IsEnableFlag != 1)
+            if (_settings.getItemDealerSAP?.IsEnableFlag != 1)
             {
                 _logger.LogInformation("Proceso DEALER de obtención de items deshabilitado");
                 return new ObtenerItemsResult { IsSuccess = true, Message = "Proceso deshabilitado" };
