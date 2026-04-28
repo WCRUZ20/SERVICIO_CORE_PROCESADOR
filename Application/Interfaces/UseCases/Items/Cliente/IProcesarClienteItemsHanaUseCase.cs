@@ -1,4 +1,4 @@
-﻿using Application.Interfaces.API;
+﻿using Application.DTO;
 
 namespace Application.Interfaces.UseCases.Items.Cliente;
 

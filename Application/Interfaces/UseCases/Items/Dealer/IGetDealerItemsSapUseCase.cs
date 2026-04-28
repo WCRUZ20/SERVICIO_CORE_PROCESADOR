@@ -1,5 +1,4 @@
-﻿using Application.UseCases.HANA;
-
+﻿using Application.DTO;
 namespace Application.Interfaces.UseCases.Items.Dealer;
 
 public interface IGetDealerItemsSapUseCase

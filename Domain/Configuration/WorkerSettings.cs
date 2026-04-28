@@ -9,6 +9,10 @@ namespace Domain.Configuration
         public ItemConfig? getItemDealerSAP { get; set; }
         public ItemConfig? processItemClienteSAP { get; set; }
         public ItemConfig? processItemDealerSAP { get; set; }
+        public ItemConfig? getStockClienteSAP { get; set; }
+        public ItemConfig? getStockDealerSAP { get; set; }
+        public StockConfig? processStockClienteSAP { get; set; }
+        public StockConfig? processStockDealerSAP { get; set; }
         public RetentionDaysConfig? RetentionDaysConfig { get; set; }
         public FileLoggerConfig? FileLoggerConfig { get; set; }
     }
@@ -25,6 +29,11 @@ namespace Domain.Configuration
     }
 
     public class ItemConfig
+    {
+        public int IsEnableFlag { get; set; }
+    }
+
+    public class StockConfig
     {
         public int IsEnableFlag { get; set; }
     }

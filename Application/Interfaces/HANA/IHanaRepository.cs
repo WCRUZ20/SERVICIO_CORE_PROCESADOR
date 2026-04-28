@@ -18,36 +18,43 @@ namespace Application.Interfaces.HANA
         /// Inserta documentos en la tabla histórica de HANA
         /// </summary>
         Task<bool> InsertItemAsync(
-            SapItemsTable items,
+            SapItemQueeDTO items,
             //OdbcConnection connection,
             //OdbcTransaction transaction,
             CancellationToken cancellationToken = default);
-                
+
         /// <summary>
         /// Obtiene Transacciones pendientes de procesamiento desde SAP
         /// </summary>
-        Task<IEnumerable<SapItemsTable>> GetPendingItemsTypeAsync(
-            string transactionType,
+        //Task<IEnumerable<SapItemQueeDTO>> GetPendingItemsTypeAsync(
+        //    string transactionType,
+        //    CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingClienteItemsTypeAsync(
             CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<SapItemsTable>> GetPendingClienteItemsTypeAsync(
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingDealerItemsTypeAsync(
             CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<SapItemsTable>> GetPendingDealerItemsTypeAsync(
+        //GetUpdateDealerItemsTypeAsync
+        Task<IEnumerable<SapItemQueeDTO>> GetUpdateDealerItemsTypeAsync(
+            CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<SapItemQueeDTO>> GetUpdateClienteItemsTypeAsync(
             CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Obtiene items pendientes de procesamiento en HANA
         /// </summary>
         /// 
-        Task<IEnumerable<SapItemsTable>> GetPendingItemsAsync<TResult>(
-            string transactionType,
+        //Task<IEnumerable<SapItemQueeDTO>> GetPendingItemsAsync<TResult>(
+        //    string transactionType,
+        //    CancellationToken cancellationToken = default) where TResult : class, new();
+
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingClienteItemsAsync<TResult>(
             CancellationToken cancellationToken = default) where TResult : class, new();
 
-        Task<IEnumerable<SapItemsTable>> GetPendingClienteItemsAsync<TResult>(
-            CancellationToken cancellationToken = default) where TResult : class, new();
-
-        Task<IEnumerable<SapItemsTable>> GetPendingDealerItemsAsync<TResult>(
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingDealerItemsAsync<TResult>(
             CancellationToken cancellationToken = default) where TResult : class, new();
 
         /// <summary>
@@ -56,12 +63,29 @@ namespace Application.Interfaces.HANA
         Task<SapItemDetailDTO?> GetItemDetailByItemCodeAsync(
             string itemCode,
             CancellationToken cancellationToken = default);
-                
+
         /// <summary>
         /// Marca un artículo como procesado
         /// </summary>
         Task<bool> MarkStatusItemAsAsync(
-            SapItemsTable item,
+            SapItemQueeDTO item,
+            CancellationToken cancellationToken = default);
+
+        //UpdateStockClienteAsync
+        Task<bool> UpdateStockAsync(
+            SapItemQueeDTO item,
+            CancellationToken cancellationToken = default);
+
+        //Task<bool> UpdateStockDealerAsync(
+        //    SapItemQueeDTO item,
+        //    CancellationToken cancellationToken = default);
+
+        Task<bool> UpdatePrecioClienteAsync(
+            SapItemQueeDTO item,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> UpdatePrecioDealerAsync(
+            SapItemQueeDTO item,
             CancellationToken cancellationToken = default);
 
         Task<bool> ExistsItemAsync(

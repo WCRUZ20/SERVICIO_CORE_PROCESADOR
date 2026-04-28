@@ -1,10 +1,9 @@
 ﻿using Application.Abstractions;
-using Application.Commands;
-using Application.Commands.Cliente;
+using Application.Commands.Items;
+using Application.Commands.Items.Cliente;
 using Application.DTO;
 using Application.Interfaces;
 using Application.Interfaces.UseCases.Items.Cliente;
-using Application.UseCases.HANA;
 using Domain.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

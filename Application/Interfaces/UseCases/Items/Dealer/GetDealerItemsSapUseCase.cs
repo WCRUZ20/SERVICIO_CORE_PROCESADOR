@@ -1,9 +1,8 @@
 ﻿using Application.Abstractions;
-using Application.Commands;
-using Application.Commands.Dealer;
+using Application.Commands.Items;
+using Application.Commands.Items.Dealer;
 using Application.DTO;
 using Application.Interfaces.UseCases.Items.Dealer;
-using Application.UseCases.HANA;
 using Domain.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -1,8 +1,7 @@
 ﻿using Application.Abstractions;
-using Application.Commands;
-using Application.Commands.Cliente;
+using Application.Commands.Items;
+using Application.Commands.Items.Cliente;
 using Application.DTO;
-using Application.Interfaces.API;
 using Application.Interfaces.UseCases.Items.Cliente;
 using Domain.Configuration;
 using Domain.Helper;
@@ -15,14 +14,14 @@ namespace Application.UseCases.Items.Cliente;
 
 public class ProcesarClienteItemsHanaUseCase : IProcesarClienteItemsHanaUseCase
 {
-    private readonly ICommandHandler<GetPendingClienteHanaItemsCommand, IEnumerable<SapItemsTable>> _getItemsHandler;
+    private readonly ICommandHandler<GetPendingClienteItemsToApiCommand, IEnumerable<SapItemQueeDTO>> _getItemsHandler;
     private readonly ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)> _sendToApiHandler;
     private readonly ICommandHandler<MarkStatusItemAsCommand, bool> _markStatusItemAsHandler;
     private readonly ILogger<ProcesarClienteItemsHanaUseCase> _logger;
     private readonly WorkerSettings _settings;
 
     public ProcesarClienteItemsHanaUseCase(
-        ICommandHandler<GetPendingClienteHanaItemsCommand, IEnumerable<SapItemsTable>> getItemsHandler,
+        ICommandHandler<GetPendingClienteItemsToApiCommand, IEnumerable<SapItemQueeDTO>> getItemsHandler,
         ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)> sendToApiHandler,
         ICommandHandler<MarkStatusItemAsCommand, bool> markStatusItemAsHandler,
         ILogger<ProcesarClienteItemsHanaUseCase> logger,
@@ -44,7 +43,7 @@ public class ProcesarClienteItemsHanaUseCase : IProcesarClienteItemsHanaUseCase
                 return new ProcesarItemsResult { IsSuccess = true, Message = "Proceso CLIENTE deshabilitado" };
             }
 
-            var itemsList = (await _getItemsHandler.HandleAsync(new GetPendingClienteHanaItemsCommand())).ToList();
+            var itemsList = (await _getItemsHandler.HandleAsync(new GetPendingClienteItemsToApiCommand())).ToList();
             if (!itemsList.Any())
             {
                 return new ProcesarItemsResult { IsSuccess = true, Message = "No hay articulos CLIENTE pendientes", ItemsProcessed = 0 };

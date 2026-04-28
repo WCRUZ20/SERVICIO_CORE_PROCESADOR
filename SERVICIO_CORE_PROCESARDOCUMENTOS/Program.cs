@@ -1,15 +1,22 @@
 // SERVICIOCORE_PROCESARDOCUMENTOSSAP/Program.cs
 using Application.Abstractions;
-using Application.Commands;
+using Application.Commands.Items;
+using Application.Commands.Items.Cliente;
+using Application.Commands.Items.Dealer;
+using Application.Commands.Stock.Cliente;
 using Application.Configuration;
 using Application.DTO;
+using Application.Handlers.Items;
+using Application.Handlers.Items.Cliente;
+using Application.Handlers.Items.Dealer;
 using Application.Interfaces;
 using Application.Interfaces.API;
 using Application.Interfaces.HANA;
 using Application.Interfaces.Security;
 using Application.Interfaces.UseCases.Items.Cliente;
 using Application.Interfaces.UseCases.Items.Dealer;
-using Application.UseCases.HANA;
+using Application.Interfaces.UseCases.Stock.Cliente;
+using Application.Interfaces.UseCases.Stock.Dealer;
 using Application.UseCases.Items.Cliente;
 using Application.UseCases.Items.Dealer;
 using Domain.Configuration;
@@ -225,21 +232,41 @@ builder.Services.AddScoped<IMapper, ServiceMapper>();
 
 //ARTICULOS CLIENTE/DEALER
 builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.Cliente.GetPendingClienteItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
-    Application.Handlers.Cliente.GetPendingClienteItemsTypeCommandHandler>();
+    ICommandHandler<GetPendingClienteItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingClienteItemsTypeCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.Dealer.GetPendingDealerItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
-    Application.Handlers.Dealer.GetPendingDealerItemsTypeCommandHandler>();
+    ICommandHandler<GetPendingDealerItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingDealerItemsTypeCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.CheckItemExistsCommand, bool>,
-    Application.Handlers.CheckItemExistsCommandHandler>();
+    ICommandHandler<GetPendingClienteStockTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingClienteStockTypeCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingDealerStockTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingDealerStockTypeCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingClienteItemsToApiCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingClienteItemsToApiCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingDealerItemsToApiCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingDealerItemsToApiCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<CheckItemExistsCommand, bool>,
+    CheckItemExistsCommandHandler>();
 
 
 builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.InsertItemsCommand, bool>,
-    Application.Handlers.InsertItemCommandHandler>();
+    ICommandHandler<InsertItemsCommand, bool>,
+    InsertItemCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<InsertStockCommand, bool>,
+    InsertStockCommandHandler>();
 
 // Handlers para proceso HANA → API
 //builder.Services.AddScoped<
@@ -255,20 +282,12 @@ builder.Services.AddScoped<
 //    Application.Handlers.MarkStatusDocumentAsCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.Cliente.GetPendingClienteHanaItemsCommand, IEnumerable<SapItemsTable>>,
-    Application.Handlers.Cliente.GetPendingClienteHanaItemsCommandHandler>();
+    ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)>,
+    SendItemsToApiCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.Dealer.GetPendingDealerHanaItemsCommand, IEnumerable<SapItemsTable>>,
-    Application.Handlers.Dealer.GetPendingDealerHanaItemsCommandHandler>();
-
-builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.SendItemsToApiCommand, (bool IsSuccess, string? Message)>,
-    Application.Handlers.SendItemsToApiCommandHandler>();
-
-builder.Services.AddScoped<
-    ICommandHandler<Application.Commands.MarkStatusItemAsCommand, bool>,
-    Application.Handlers.MarkStatusItemAsCommandHandler>();
+    ICommandHandler<MarkStatusItemAsCommand, bool>,
+    MarkStatusItemAsCommandHandler>();
 
 //builder.Services.AddScoped<
 //    ICommandHandler<Application.Commands.GetPendingHooksCommand, IEnumerable<SapDrivinTable>>,
@@ -292,6 +311,10 @@ builder.Services.AddScoped<IGetClienteItemsSapUseCase, GetClienteItemsSapUseCase
 builder.Services.AddScoped<IGetDealerItemsSapUseCase, GetDealerItemsSapUseCase>();
 builder.Services.AddScoped<IProcesarClienteItemsHanaUseCase, ProcesarClienteItemsHanaUseCase>();
 builder.Services.AddScoped<IProcesarDealerItemsHanaUseCase, ProcesarDealerItemsHanaUseCase>();
+
+//STOCK
+builder.Services.AddScoped<IGetClienteStockSapUseCase, GetClienteStockSapUseCase>();
+builder.Services.AddScoped<IGetDealerStockSapUseCase, GetDealerStockSapUseCase>();
 
 
 

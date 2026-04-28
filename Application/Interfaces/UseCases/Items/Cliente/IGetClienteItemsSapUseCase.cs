@@ -1,4 +1,4 @@
-﻿using Application.UseCases.HANA;
+﻿using Application.DTO;
 
 namespace Application.Interfaces.UseCases.Items.Cliente;
 

@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Interfaces\UseCases\Stock\Cliente\ProcesarClienteStockHanaUseCase.cs" />
+    <Compile Remove="Interfaces\UseCases\Stock\Dealer\ProcesarClienteStockHanaUseCase.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
@@ -23,10 +28,6 @@
     <Reference Include="SAPBusinessOneSDK">
       <HintPath>..\Shared\Dependencies\SAPBusinessOneSDK.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="UseCases\API\" />
   </ItemGroup>
 
 </Project>

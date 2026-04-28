@@ -1,8 +1,7 @@
 ﻿using Application.Abstractions;
-using Application.Commands;
-using Application.Commands.Dealer;
+using Application.Commands.Items;
+using Application.Commands.Items.Dealer;
 using Application.DTO;
-using Application.Interfaces.API;
 using Application.Interfaces.UseCases.Items.Dealer;
 using Domain.Configuration;
 using Domain.Helper;
@@ -15,14 +14,14 @@ namespace Application.UseCases.Items.Dealer;
 
 public class ProcesarDealerItemsHanaUseCase : IProcesarDealerItemsHanaUseCase
 {
-    private readonly ICommandHandler<GetPendingDealerHanaItemsCommand, IEnumerable<SapItemsTable>> _getItemsHandler;
+    private readonly ICommandHandler<GetPendingDealerItemsToApiCommand, IEnumerable<SapItemQueeDTO>> _getItemsHandler;
     private readonly ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)> _sendToApiHandler;
     private readonly ICommandHandler<MarkStatusItemAsCommand, bool> _markStatusItemAsHandler;
     private readonly ILogger<ProcesarDealerItemsHanaUseCase> _logger;
     private readonly WorkerSettings _settings;
 
     public ProcesarDealerItemsHanaUseCase(
-        ICommandHandler<GetPendingDealerHanaItemsCommand, IEnumerable<SapItemsTable>> getItemsHandler,
+        ICommandHandler<GetPendingDealerItemsToApiCommand, IEnumerable<SapItemQueeDTO>> getItemsHandler,
         ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)> sendToApiHandler,
         ICommandHandler<MarkStatusItemAsCommand, bool> markStatusItemAsHandler,
         ILogger<ProcesarDealerItemsHanaUseCase> logger,
@@ -44,7 +43,7 @@ public class ProcesarDealerItemsHanaUseCase : IProcesarDealerItemsHanaUseCase
                 return new ProcesarItemsResult { IsSuccess = true, Message = "Proceso DEALER deshabilitado" };
             }
 
-            var itemsList = (await _getItemsHandler.HandleAsync(new GetPendingDealerHanaItemsCommand())).ToList();
+            var itemsList = (await _getItemsHandler.HandleAsync(new GetPendingDealerItemsToApiCommand())).ToList();
             if (!itemsList.Any())
             {
                 return new ProcesarItemsResult { IsSuccess = true, Message = "No hay articulos DEALER pendientes", ItemsProcessed = 0 };
