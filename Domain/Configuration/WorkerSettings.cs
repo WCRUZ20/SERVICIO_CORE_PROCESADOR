@@ -5,14 +5,31 @@ namespace Domain.Configuration
         public WorkerConfig? Worker { get; set; }
         public DocumentConfig? getDocumentSAP { get; set; }
         public DocumentConfig? processDocumentSAP { get; set; }
+
+        //variable para habilitar proceso de articulo
         public ItemConfig? getItemClienteSAP { get; set; }
         public ItemConfig? getItemDealerSAP { get; set; }
         public ItemConfig? processItemClienteSAP { get; set; }
         public ItemConfig? processItemDealerSAP { get; set; }
-        public ItemConfig? getStockClienteSAP { get; set; }
-        public ItemConfig? getStockDealerSAP { get; set; }
+
+        //variable para habilitar proceso de stock
+        public StockConfig? getStockClienteSAP { get; set; }
+        public StockConfig? getStockDealerSAP { get; set; }
         public StockConfig? processStockClienteSAP { get; set; }
         public StockConfig? processStockDealerSAP { get; set; }
+
+        //variable para habilitar proceso de precio
+        public PrecioConfig? getPrecioClienteSAP { get; set; }
+        public PrecioConfig? getPrecioDealerSAP { get; set; }
+        public PrecioConfig? processPrecioClienteSAP { get; set; }
+        public PrecioConfig? processPrecioDealerSAP { get; set; }
+
+        //variable para habilitar proceso de ordenes
+        public OrderConfig? getOrderWooCliente { get; set; }
+        public OrderConfig? getOrderWooDealer { get; set; }
+        public OrderConfig? processOrderWooCliente { get; set; }
+        public OrderConfig? processOrderWooDealer { get; set; }
+
         public RetentionDaysConfig? RetentionDaysConfig { get; set; }
         public FileLoggerConfig? FileLoggerConfig { get; set; }
     }
@@ -34,6 +51,16 @@ namespace Domain.Configuration
     }
 
     public class StockConfig
+    {
+        public int IsEnableFlag { get; set; }
+    }
+
+    public class PrecioConfig
+    {
+        public int IsEnableFlag { get; set; }
+    }
+
+    public class OrderConfig
     {
         public int IsEnableFlag { get; set; }
     }

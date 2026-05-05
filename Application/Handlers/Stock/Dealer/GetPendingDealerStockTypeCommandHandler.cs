@@ -27,11 +27,11 @@ public class GetPendingDealerStockTypeCommandHandler
 
     public async Task<IEnumerable<SapItemQueeDTO>> HandleAsync(GetPendingDealerStockTypeCommand command)
     {
-        _logger.LogInformation("Obteniendo articulos pendientes de DEALER");
+        _logger.LogInformation("Obteniendo stock pendientes de DEALER");
         var entities = await _hanaRepository.GetUpdateDealerItemsTypeAsync();
         var entityList = entities.ToList();
 
-        _logger.LogInformation("Se encontraron {Count} articulos pendientes de DEALER", entityList.Count);
+        _logger.LogInformation("Se encontraron {Count} stock pendientes de DEALER", entityList.Count);
         return _mapper.Map<List<SapItemQueeDTO>>(entityList);
     }
 }

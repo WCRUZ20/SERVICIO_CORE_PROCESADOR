@@ -31,7 +31,7 @@ namespace Application.Handlers.Items.Dealer
 
         public async Task<IEnumerable<SapItemQueeDTO>> HandleAsync(GetPendingDealerItemsToApiCommand command)
         {
-            _logger.LogInformation("Obteniendo articulos pendientes de CLIENTE desde HANA -> API");
+            _logger.LogInformation("Obteniendo articulos pendientes de DEALER desde HANA -> API");
             return await _hanaRepository.GetPendingDealerItemsAsync<SapItemQueeDTO>();
         }
     }

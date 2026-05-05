@@ -24,6 +24,7 @@ namespace Application.DTO
         public int Status { get; set; }
         public decimal Stock {  get; set; }
         public decimal regular_price { get; set; }
+        public string Bodega {  get; set; }
         public string idWoo {  get; set; }
     }
 }

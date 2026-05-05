@@ -28,7 +28,7 @@ public class GetPendingClienteItemsTypeCommandHandler
     public async Task<IEnumerable<SapItemQueeDTO>> HandleAsync(GetPendingClienteItemsTypeCommand command)
     {
         _logger.LogInformation("Obteniendo articulos pendientes de CLIENTE");
-        var entities = await _hanaRepository.GetPendingClienteItemsTypeAsync();
+        var entities = await _hanaRepository.GetPendingClienteItemsTypeAsync(); //GetPendingClienteItemsAsync
         var entityList = entities.ToList();
 
         _logger.LogInformation("Se encontraron {Count} articulos pendientes de CLIENTE", entityList.Count);

@@ -16,7 +16,7 @@ namespace Application.DTO
         public decimal? Price { get; set; }
         public string? name {  get; set; }
         public string? sku { get; set; }
-        public string? regularPrice {  get; set; }
+        public decimal? regularPrice {  get; set; }
         public decimal? stockQuantity {  get; set; }
         public string? status {  get; set; }
         public string? type { get; set; }

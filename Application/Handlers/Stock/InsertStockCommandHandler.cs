@@ -38,20 +38,20 @@ namespace Application.Handlers.Items
             var itemQuery = $"ItemCode: {command.item.SapDocEntry} DocNum: {command.item.SapDocNum} Transaction: {command.item.Transaction}";
 
             _logger.LogDebug(
-                $"Insertando articulo {itemQuery}  en HANA");
+                $"Insertando stock {itemQuery}  en HANA");
 
             // Convertir DTO a entidad de dominio usando Mapster
             var entity = _mapper.Map<SapItemQueeDTO>(command.item);
 
-            var inserted = await _hanaRepository.UpdateStockAsync(entity);
+            var inserted = await _hanaRepository.InsertStockAsync(entity);
 
             if (inserted)
             {
-                _logger.LogDebug($"Articulo {itemQuery} insertado correctamente");
+                _logger.LogDebug($"Stock {itemQuery} insertado correctamente");
             }
             else
             {
-                _logger.LogWarning($"No se pudo insertar el articulo: {itemQuery}");
+                _logger.LogWarning($"No se pudo insertar el stock: {itemQuery}");
             }
 
             return inserted;

@@ -11,7 +11,7 @@ namespace Application.Commands.Items
 {
     public enum ItemDestinationType
     {
-        Cliente = 0,
+        Cliente = 2,
         Dealer = 1
     }
 

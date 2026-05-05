@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 namespace Application.Commands.Items
 {
-    public record CheckItemExistsCommand(int transaction, string itemCode)
+    public record CheckItemExistsCommand(int transaction, string itemCode, string bodega)
         : ICommand<bool>;
 }

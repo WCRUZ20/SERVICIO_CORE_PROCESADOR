@@ -15,6 +15,15 @@ namespace Domain.Configuration
         public string? ProcesarArticuloClienteEndPoint { get; set; }
         public string? ProcesarArticuloDealerEndPoint { get; set; }
 
+        public string? ProcesarStockClienteEndPoint { get; set; }
+        public string? ProcesarStockDealerEndPoint { get; set; }
+
+        public string? ProcesarPrecioClienteEndPoint { get; set; }
+        public string? ProcesarPrecioDealerEndPoint { get; set; }
+
+        public string? GetOrdenesClienteEndPoint { get; set; }
+        public string? GetOrdenesDealerEndPoint { get; set; }
+
         /// <summary>
         /// Endpoint de autenticación para obtener tokens JWT (ej: "/api/auth/login")
         /// </summary>

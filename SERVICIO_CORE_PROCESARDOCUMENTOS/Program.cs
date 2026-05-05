@@ -3,18 +3,39 @@ using Application.Abstractions;
 using Application.Commands.Items;
 using Application.Commands.Items.Cliente;
 using Application.Commands.Items.Dealer;
+using Application.Commands.Order;
+using Application.Commands.Order.Cliente;
+using Application.Commands.Order.Dealer;
+using Application.Commands.Precio;
+using Application.Commands.Precio.Cliente;
+using Application.Commands.Precio.Dealer;
+using Application.Commands.Stock;
 using Application.Commands.Stock.Cliente;
+using Application.Commands.Stock.Dealer;
 using Application.Configuration;
 using Application.DTO;
 using Application.Handlers.Items;
 using Application.Handlers.Items.Cliente;
 using Application.Handlers.Items.Dealer;
+using Application.Handlers.Order;
+using Application.Handlers.Order.Cliente;
+using Application.Handlers.Order.Dealer;
+using Application.Handlers.Precio;
+using Application.Handlers.Precio.Cliente;
+using Application.Handlers.Precio.Dealer;
+using Application.Handlers.Stock;
+using Application.Handlers.Stock.Cliente;
+using Application.Handlers.Stock.Dealer;
 using Application.Interfaces;
 using Application.Interfaces.API;
 using Application.Interfaces.HANA;
 using Application.Interfaces.Security;
 using Application.Interfaces.UseCases.Items.Cliente;
 using Application.Interfaces.UseCases.Items.Dealer;
+using Application.Interfaces.UseCases.Order.Cliente;
+using Application.Interfaces.UseCases.Order.Dealer;
+using Application.Interfaces.UseCases.Precio.Cliente;
+using Application.Interfaces.UseCases.Precio.Dealer;
 using Application.Interfaces.UseCases.Stock.Cliente;
 using Application.Interfaces.UseCases.Stock.Dealer;
 using Application.UseCases.Items.Cliente;
@@ -103,33 +124,33 @@ static string DecryptIfNeeded(string? value, ISecretProtector protector)
 var secretsSection = builder.Configuration.GetSection("ExternalServices:OptionSecretsSL");
 var decryptedSecrets = new OptionSecretsSL
 {
-    //CompanyDBSAP = DecryptIfNeeded(secretsSection["CompanyDBSAP"], secretProtector),
-    //UserSLSAP = DecryptIfNeeded(secretsSection["UserSLSAP"], secretProtector),
     ApiMiddlewareIPUrl = DecryptIfNeeded(secretsSection["ApiMiddlewareIPUrl"], secretProtector),
     ProcesarDocumentoEndPoint = DecryptIfNeeded(secretsSection["ProcesarDocumentoEndPoint"], secretProtector),
     ProcesarArticuloClienteEndPoint = DecryptIfNeeded(secretsSection["ProcesarArticuloClienteEndPoint"], secretProtector),
     ProcesarArticuloDealerEndPoint = DecryptIfNeeded(secretsSection["ProcesarArticuloDealerEndPoint"], secretProtector),
+    ProcesarStockClienteEndPoint = DecryptIfNeeded(secretsSection["ProcesarStockClienteEndPoint"], secretProtector),
+    ProcesarStockDealerEndPoint = DecryptIfNeeded(secretsSection["ProcesarStockDealerEndPoint"], secretProtector),
+    ProcesarPrecioClienteEndPoint = DecryptIfNeeded(secretsSection["ProcesarPrecioClienteEndPoint"], secretProtector),
+    ProcesarPrecioDealerEndPoint = DecryptIfNeeded(secretsSection["ProcesarPrecioDealerEndPoint"], secretProtector),
+    GetOrdenesClienteEndPoint = DecryptIfNeeded(secretsSection["GetOrdenesClienteEndPoint"], secretProtector),
+    GetOrdenesDealerEndPoint = DecryptIfNeeded(secretsSection["GetOrdenesDealerEndPoint"], secretProtector),
     AuthEndpoint = secretsSection["AuthEndpoint"], // No necesita desencriptar, es solo una ruta
     ApiClientId = secretsSection["ApiClientId"], // No necesita desencriptar si es público
-    ApiClientSecret = DecryptIfNeeded(secretsSection["ApiClientSecret"], secretProtector), // Puede estar encriptado
-    //BaseUrlSLSAP = DecryptIfNeeded(secretsSection["BaseUrlSLSAP"], secretProtector),
-    //LoginSLSAP = DecryptIfNeeded(secretsSection["LoginSLSAP"], secretProtector),
-    //TransferEndPointSLSAP = DecryptIfNeeded(secretsSection["TransferEndPointSLSAP"], secretProtector)
+    ApiClientSecret = DecryptIfNeeded(secretsSection["ApiClientSecret"], secretProtector), // Puede estar encriptado    
 };
 // Configurar OptionSecretsSL con valores ya desencriptados
 builder.Services.Configure<OptionSecretsSL>(options =>
-{
-    //options.CompanyDBSAP = decryptedSecrets.CompanyDBSAP;
-    //options.UserSLSAP = decryptedSecrets.UserSLSAP;
-    //options.PassWordSLSAP = decryptedSecrets.PassWordSLSAP;
-    //options.BaseUrlSLSAP = decryptedSecrets.BaseUrlSLSAP;
-    //options.LoginSLSAP = decryptedSecrets.LoginSLSAP;
-    //options.TransferEndPointSLSAP = decryptedSecrets.TransferEndPointSLSAP;
-
+{ 
     options.ApiMiddlewareIPUrl = decryptedSecrets.ApiMiddlewareIPUrl;
     options.ProcesarDocumentoEndPoint = decryptedSecrets.ProcesarDocumentoEndPoint;
     options.ProcesarArticuloClienteEndPoint = decryptedSecrets.ProcesarArticuloClienteEndPoint;
     options.ProcesarArticuloDealerEndPoint = decryptedSecrets.ProcesarArticuloDealerEndPoint;
+    options.ProcesarStockClienteEndPoint = decryptedSecrets.ProcesarStockClienteEndPoint;
+    options.ProcesarStockDealerEndPoint = decryptedSecrets.ProcesarStockDealerEndPoint;
+    options.ProcesarPrecioClienteEndPoint = decryptedSecrets.ProcesarPrecioClienteEndPoint;
+    options.ProcesarPrecioDealerEndPoint = decryptedSecrets.ProcesarPrecioDealerEndPoint;
+    options.GetOrdenesClienteEndPoint = decryptedSecrets.GetOrdenesClienteEndPoint;
+    options.GetOrdenesDealerEndPoint = decryptedSecrets.GetOrdenesDealerEndPoint;
     options.AuthEndpoint = decryptedSecrets.AuthEndpoint;
     options.ApiClientId = decryptedSecrets.ApiClientId;
     options.ApiClientSecret = decryptedSecrets.ApiClientSecret;
@@ -216,20 +237,6 @@ builder.Services.AddScoped<IMapper, ServiceMapper>();
 // Command Handlers
 // ==========================
 
-//DOCUMENTOS
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.GetPendingDocumentsTypeCommand, IEnumerable<SapDrivinTableDTO>>,
-//    Application.Handlers.GetPendingDocumentsTypeCommandHandler>();
-
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.CheckDocumentExistsCommand, bool>,
-//    Application.Handlers.CheckDocumentExistsCommandHandler>();
-
-
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.InsertDocumentCommand, bool>,
-//    Application.Handlers.InsertDocumentCommandHandler>();
-
 //ARTICULOS CLIENTE/DEALER
 builder.Services.AddScoped<
     ICommandHandler<GetPendingClienteItemsTypeCommand, IEnumerable<SapItemQueeDTO>>,
@@ -240,13 +247,18 @@ builder.Services.AddScoped<
     GetPendingDealerItemsTypeCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<GetPendingClienteStockTypeCommand, IEnumerable<SapItemQueeDTO>>,
-    GetPendingClienteStockTypeCommandHandler>();
+    ICommandHandler<CheckItemExistsCommand, bool>,
+    CheckItemExistsCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<GetPendingDealerStockTypeCommand, IEnumerable<SapItemQueeDTO>>,
-    GetPendingDealerStockTypeCommandHandler>();
+    ICommandHandler<InsertItemsCommand, bool>,
+    InsertItemCommandHandler>();
 
+builder.Services.AddScoped<
+    ICommandHandler<MarkStatusItemAsCommand, bool>,
+    MarkStatusItemAsCommandHandler>();
+
+//ENVIO HACIA API - ARTICULOS
 builder.Services.AddScoped<
     ICommandHandler<GetPendingClienteItemsToApiCommand, IEnumerable<SapItemQueeDTO>>,
     GetPendingClienteItemsToApiCommandHandler>();
@@ -256,57 +268,92 @@ builder.Services.AddScoped<
     GetPendingDealerItemsToApiCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<CheckItemExistsCommand, bool>,
-    CheckItemExistsCommandHandler>();
+    ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)>,
+    SendItemsToApiCommandHandler>();
 
+//STOCK CLIENTE/DEALER
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingClienteStockTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingClienteStockTypeCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<InsertItemsCommand, bool>,
-    InsertItemCommandHandler>();
+    ICommandHandler<GetPendingDealerStockTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingDealerStockTypeCommandHandler>();
 
 builder.Services.AddScoped<
     ICommandHandler<InsertStockCommand, bool>,
     InsertStockCommandHandler>();
 
-// Handlers para proceso HANA → API
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.GetPendingHanaDocumentsCommand, IEnumerable<SapDrivinTable>>,
-//    Application.Handlers.GetPendingHanaDocumentsCommandHandler>();
-
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.SendDocumentsToApiCommand, (bool IsSuccess, string? ErrorMessage)>,
-//    Application.Handlers.SendStockDocumentsToApiCommandHandler>();
-
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.MarkStatusDocuemntAsCommand, bool>,
-//    Application.Handlers.MarkStatusDocumentAsCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)>,
-    SendItemsToApiCommandHandler>();
+    ICommandHandler<MarkStatusStockAsCommand, bool>,
+    MarkStatusStockAsCommandHandler>();
+
+//ENVIO HACIA API - STOCK
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingClienteStockToApiCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingClienteStockToApiCommandHandler>();
 
 builder.Services.AddScoped<
-    ICommandHandler<MarkStatusItemAsCommand, bool>,
-    MarkStatusItemAsCommandHandler>();
+    ICommandHandler<GetPendingDealerStockToApiCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingDealerStockToApiCommandHandler>();
 
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.GetPendingHooksCommand, IEnumerable<SapDrivinTable>>,
-//    Application.Handlers.GetPendingHooksCommandHandler>();
+builder.Services.AddScoped<
+    ICommandHandler<SendStockToApiCommand, (bool IsSuccess, string? Message)>,
+    SendStockToApiCommandHandler>();
 
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.VerifyDocumentStatusSAPCommand, bool>,
-//    Application.Handlers.VerifyDocumentStatusSAPCommandHandler>();
+//PRECIO CLIENTE/DEALER
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingClientePrecioTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingClientePrecioTypeCommandHandler>();
 
-//builder.Services.AddScoped<
-//    ICommandHandler<Application.Commands.ChangeStatusDocumentSAPCommand, bool>,
-//    Application.Handlers.ChangeStatusDocumentSAPCommandHandler>();
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingDealerPrecioTypeCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingDealerPrecioTypeCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<InsertPrecioCommand, bool>,
+    InsertPrecioCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<MarkStatusPrecioAsCommand, bool>,
+    MarkStatusPrecioAsCommandHandler>();
+
+//ENVIO HACIA API - PRECIO
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingClientePrecioToApiCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingClientePrecioToApiCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingDealerPrecioToApiCommand, IEnumerable<SapItemQueeDTO>>,
+    GetPendingDealerPrecioToApiCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<SendPrecioToApiCommand, (bool IsSuccess, string? Message)>,
+    SendPrecioToApiCommandHandler>();
+
+//ORDENES
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingsClienteOrdersCommand, IEnumerable<WooOrderDTO>>,
+    GetPendingsClienteOrdersHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<GetPendingsDealerOrdersCommand, IEnumerable<WooOrderDTO>>,
+    GetPendingsDealerOrdersHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<CheckOrderExistsCommand, bool>,
+    CheckOrderExistsCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<InsertOrdersCommand, bool>,
+    InsertOrdersCommandHandler>();
 
 // ==========================
 // UseCases
 // ==========================
-//builder.Services.AddScoped<GetDocumentsTypeSapUseCase>();
-//builder.Services.AddScoped<ProcesarDocumentsHanaUseCase>();
-//builder.Services.AddScoped<GetHookSapUseCase>();
+
+//ARTICULOS
 builder.Services.AddScoped<IGetClienteItemsSapUseCase, GetClienteItemsSapUseCase>();
 builder.Services.AddScoped<IGetDealerItemsSapUseCase, GetDealerItemsSapUseCase>();
 builder.Services.AddScoped<IProcesarClienteItemsHanaUseCase, ProcesarClienteItemsHanaUseCase>();
@@ -315,8 +362,18 @@ builder.Services.AddScoped<IProcesarDealerItemsHanaUseCase, ProcesarDealerItemsH
 //STOCK
 builder.Services.AddScoped<IGetClienteStockSapUseCase, GetClienteStockSapUseCase>();
 builder.Services.AddScoped<IGetDealerStockSapUseCase, GetDealerStockSapUseCase>();
+builder.Services.AddScoped<IProcesarClienteStockHanaUseCase, ProcesarClienteStockHanaUseCase>();
+builder.Services.AddScoped<IProcesarDealerStockHanaUseCase, ProcesarDealerStockHanaUseCase>();
 
+//PRECIO
+builder.Services.AddScoped<IGetClientePrecioSapUseCase, GetClientePrecioSapUseCase>();
+builder.Services.AddScoped<IGetDealerPrecioSapUseCase, GetDealerPrecioSapUseCase>();
+builder.Services.AddScoped<IProcesarClientePrecioHanaUseCase, ProcesarClientePrecioHanaUseCase>();
+builder.Services.AddScoped<IProcesarDealerPrecioHanaUseCase, ProcesarDealerPrecioHanaUseCase>();
 
+//ORDENES
+builder.Services.AddScoped<IGetClienteOrderSapUseCase, GetClienteOrderSapUseCase>();
+builder.Services.AddScoped<IGetDealerOrderSapUseCase, GetDealerOrderSapUseCase>();
 
 // ==========================
 // Worker

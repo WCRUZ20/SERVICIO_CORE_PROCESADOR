@@ -38,7 +38,7 @@ public class GetClienteItemsSapUseCase : IGetClienteItemsSapUseCase
         {
             if (_settings.getItemClienteSAP?.IsEnableFlag != 1)
             {
-                _logger.LogInformation("Proceso CLIENTE de obtención de items deshabilitado");
+                _logger.LogInformation("PROCESO ENCOLAMIENTO CLIENTE - ARTICULOS (GET) DESHABILITADO");
                 return new ObtenerItemsResult { IsSuccess = true, Message = "Proceso deshabilitado" };
             }
 
@@ -51,7 +51,7 @@ public class GetClienteItemsSapUseCase : IGetClienteItemsSapUseCase
             var itemsInserted = 0;
             foreach (var item in itemsList)
             {
-                var exists = await _checkExistsHandler.HandleAsync(new CheckItemExistsCommand(item.Transaction, item.SapDocEntry));
+                var exists = await _checkExistsHandler.HandleAsync(new CheckItemExistsCommand(item.Transaction, item.SapDocEntry.ToString(), item.Bodega));
                 if (exists) continue;
 
                 var inserted = await _insertItemHandler.HandleAsync(new InsertItemsCommand(item));

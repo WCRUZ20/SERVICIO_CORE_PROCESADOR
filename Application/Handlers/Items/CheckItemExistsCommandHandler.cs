@@ -35,7 +35,7 @@ namespace Application.Handlers.Items
 
             bool exists;
 
-            exists = await _hanaRepository.ExistsItemAsync(command.transaction, command.itemCode, command.itemCode);
+            exists = await _hanaRepository.ExistsItemAsync(command.transaction, command.itemCode, command.bodega);
             if (exists)
             {
                 _logger.LogDebug($"articulo ItemCode {command.itemCode} Transaction: {command.transaction}");

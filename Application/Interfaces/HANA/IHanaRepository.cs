@@ -1,3 +1,4 @@
+using Application.Commands.Items;
 using Application.DTO;
 using Domain.SAP;
 using System.Collections.Generic;
@@ -18,6 +19,12 @@ namespace Application.Interfaces.HANA
         /// Inserta documentos en la tabla histórica de HANA
         /// </summary>
         Task<bool> InsertItemAsync(
+            SapItemQueeDTO items,
+            //OdbcConnection connection,
+            //OdbcTransaction transaction,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> InsertOrdenAsync(
             SapItemQueeDTO items,
             //OdbcConnection connection,
             //OdbcTransaction transaction,
@@ -57,11 +64,20 @@ namespace Application.Interfaces.HANA
         Task<IEnumerable<SapItemQueeDTO>> GetPendingDealerItemsAsync<TResult>(
             CancellationToken cancellationToken = default) where TResult : class, new();
 
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingClienteStockAsync<TResult>(
+            CancellationToken cancellationToken = default) where TResult : class, new();
+
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingDealerStockAsync<TResult>(
+            CancellationToken cancellationToken = default) where TResult : class, new();
         /// <summary>
         /// Obtiene el detalle del artículo en SAP/HANA a partir del ItemCode.
         /// </summary>
         Task<SapItemDetailDTO?> GetItemDetailByItemCodeAsync(
-            string itemCode,
+            ItemDestinationType destinationType, string itemCode, string bodega,
+            CancellationToken cancellationToken = default);
+
+        Task<SapItemDetailDTO?> GetStockDetailByItemCodeAsync(
+            Application.Commands.Stock.ItemDestinationType destinationType, string itemCode, string bodega,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -71,8 +87,12 @@ namespace Application.Interfaces.HANA
             SapItemQueeDTO item,
             CancellationToken cancellationToken = default);
 
+        Task<bool> MarkStatusStockAsAsync(
+            SapItemQueeDTO item,
+            CancellationToken cancellationToken = default);
+
         //UpdateStockClienteAsync
-        Task<bool> UpdateStockAsync(
+        Task<bool> InsertStockAsync(
             SapItemQueeDTO item,
             CancellationToken cancellationToken = default);
 
@@ -80,17 +100,23 @@ namespace Application.Interfaces.HANA
         //    SapItemQueeDTO item,
         //    CancellationToken cancellationToken = default);
 
-        Task<bool> UpdatePrecioClienteAsync(
-            SapItemQueeDTO item,
-            CancellationToken cancellationToken = default);
-
-        Task<bool> UpdatePrecioDealerAsync(
-            SapItemQueeDTO item,
-            CancellationToken cancellationToken = default);
-
         Task<bool> ExistsItemAsync(
             int transaction, string docEntry, string docNum,
             CancellationToken cancellationToken = default);
+
+        Task<bool> ExistsOrderAsync(
+            int transaction, string docEntry, string docNum,
+            CancellationToken cancellationToken = default);
+
+
+        //PRECIO
+        Task<bool> InsertPrecioAsync(SapItemQueeDTO item, CancellationToken cancellationToken = default);
+        Task<IEnumerable<SapItemQueeDTO>> GetUpdateDealerPrecioTypeAsync(CancellationToken cancellationToken = default);
+        Task<IEnumerable<SapItemQueeDTO>> GetUpdateClientePrecioTypeAsync(CancellationToken cancellationToken = default);
+        Task<bool> MarkStatusPrecioAsAsync(SapItemQueeDTO item, CancellationToken cancellationToken = default);
+        Task<SapItemDetailDTO?> GetPrecioDetailByItemCodeAsync(Application.Commands.Precio.ItemDestinationType destinationType, string itemCode, string bodega, CancellationToken cancellationToken = default);
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingClientePrecioAsync<TResult>(CancellationToken cancellationToken = default) where TResult : class, new();
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingDealerPrecioAsync<TResult>(CancellationToken cancellationToken = default) where TResult : class, new();
 
     }
 }

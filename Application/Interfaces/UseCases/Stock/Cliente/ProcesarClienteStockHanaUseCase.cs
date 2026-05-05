@@ -1,9 +1,7 @@
 ﻿using Application.Abstractions;
-using Application.Commands.Items;
-using Application.Commands.Items.Cliente;
+using Application.Commands.Stock;
+using Application.Commands.Stock.Cliente;
 using Application.DTO;
-using Application.Interfaces.UseCases.Items.Cliente;
-using Application.UseCases.Items.Cliente;
 using Domain.Configuration;
 using Domain.Helper;
 using Microsoft.Extensions.Logging;
@@ -17,19 +15,19 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces.UseCases.Stock.Cliente
 {
-    internal class ProcesarClienteStockHanaUseCase : IProcesarClienteItemsHanaUseCase
+    public class ProcesarClienteStockHanaUseCase : IProcesarClienteStockHanaUseCase
     {
-        private readonly ICommandHandler<GetPendingClienteItemsToApiCommand, IEnumerable<SapItemQueeDTO>> _getItemsHandler;
-        private readonly ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)> _sendToApiHandler;
-        private readonly ICommandHandler<MarkStatusItemAsCommand, bool> _markStatusItemAsHandler;
-        private readonly ILogger<ProcesarClienteItemsHanaUseCase> _logger;
+        private readonly ICommandHandler<GetPendingClienteStockToApiCommand, IEnumerable<SapItemQueeDTO>> _getItemsHandler;
+        private readonly ICommandHandler<SendStockToApiCommand, (bool IsSuccess, string? Message)> _sendToApiHandler;
+        private readonly ICommandHandler<MarkStatusStockAsCommand, bool> _markStatusItemAsHandler;
+        private readonly ILogger<ProcesarClienteStockHanaUseCase> _logger;
         private readonly WorkerSettings _settings;
 
         public ProcesarClienteStockHanaUseCase(
-            ICommandHandler<GetPendingClienteItemsToApiCommand, IEnumerable<SapItemQueeDTO>> getItemsHandler,
-            ICommandHandler<SendItemsToApiCommand, (bool IsSuccess, string? Message)> sendToApiHandler,
-            ICommandHandler<MarkStatusItemAsCommand, bool> markStatusItemAsHandler,
-            ILogger<ProcesarClienteItemsHanaUseCase> logger,
+            ICommandHandler<GetPendingClienteStockToApiCommand, IEnumerable<SapItemQueeDTO>> getItemsHandler,
+            ICommandHandler<SendStockToApiCommand, (bool IsSuccess, string? Message)> sendToApiHandler,
+            ICommandHandler<MarkStatusStockAsCommand, bool> markStatusItemAsHandler,
+            ILogger<ProcesarClienteStockHanaUseCase> logger,
             IOptions<WorkerSettings> settings)
         {
             _getItemsHandler = getItemsHandler;
@@ -43,12 +41,12 @@ namespace Application.Interfaces.UseCases.Stock.Cliente
         {
             try
             {
-                if (_settings.processItemClienteSAP?.IsEnableFlag != 1)
+                if (_settings.processStockClienteSAP?.IsEnableFlag != 1)
                 {
                     return new ProcesarItemsResult { IsSuccess = true, Message = "Proceso CLIENTE deshabilitado" };
                 }
 
-                var itemsList = (await _getItemsHandler.HandleAsync(new GetPendingClienteItemsToApiCommand())).ToList();
+                var itemsList = (await _getItemsHandler.HandleAsync(new GetPendingClienteStockToApiCommand())).ToList();
                 if (!itemsList.Any())
                 {
                     return new ProcesarItemsResult { IsSuccess = true, Message = "No hay articulos CLIENTE pendientes", ItemsProcessed = 0 };
@@ -59,14 +57,14 @@ namespace Application.Interfaces.UseCases.Stock.Cliente
                 foreach (var item in itemsList)
                 {
                     item.Status = (int)StatusHanaDocumentLevel.Sent;
-                    if (!await _markStatusItemAsHandler.HandleAsync(new MarkStatusItemAsCommand(item)))
+                    if (!await _markStatusItemAsHandler.HandleAsync(new MarkStatusStockAsCommand(item)))
                     {
                         failed++;
                         continue;
                     }
 
                     var sendResult = await _sendToApiHandler.HandleAsync(
-                        new SendItemsToApiCommand(item, ItemDestinationType.Cliente));
+                        new SendStockToApiCommand(item, ItemDestinationType.Cliente));
                     item.Status = sendResult.IsSuccess ? (int)StatusHanaDocumentLevel.Confirmed : (int)StatusHanaDocumentLevel.Error;
                     item.Json = sendResult.Message ?? string.Empty;
                     if (sendResult.IsSuccess && !string.IsNullOrWhiteSpace(sendResult.Message))
@@ -82,7 +80,7 @@ namespace Application.Interfaces.UseCases.Stock.Cliente
                     }
 
                     if (sendResult.IsSuccess) sent++; else failed++;
-                    await _markStatusItemAsHandler.HandleAsync(new MarkStatusItemAsCommand(item));
+                    await _markStatusItemAsHandler.HandleAsync(new MarkStatusStockAsCommand(item));
                 }
 
                 return new ProcesarItemsResult { IsSuccess = true, ItemsProcessed = itemsList.Count, ItemsSent = sent, ItemsFailed = failed, Message = $"CLIENTE: {sent} enviados, {failed} fallidos" };
@@ -93,7 +91,5 @@ namespace Application.Interfaces.UseCases.Stock.Cliente
                 return new ProcesarItemsResult { IsSuccess = false, ErrorMessage = ex.Message };
             }
         }
-    }
-    {
     }
 }

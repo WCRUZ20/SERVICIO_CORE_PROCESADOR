@@ -26,6 +26,27 @@ namespace Application.Interfaces.API
             string? bearerToken = null,
             CancellationToken cancellationToken = default);
 
+        Task<(bool IsSuccess, string? Message)> SendStockAsync(
+            WooStockRequestDTO item,
+            Application.Commands.Stock.ItemDestinationType destinationType,
+            string? bearerToken = null,
+            CancellationToken cancellationToken = default);
+
+        Task<(bool IsSuccess, string? Message)> SendPrecioAsync(
+            WooPrecioRequestDTO item,
+            Application.Commands.Precio.ItemDestinationType destinationType,
+            string? bearerToken = null,
+            CancellationToken cancellationToken = default);
+
+        // ORDENES
+        Task<(bool IsSuccess, string? Message, IEnumerable<WooOrderDTO> Orders)> GetClienteOrdersAsync(
+            string? bearerToken = null,
+            CancellationToken cancellationToken = default);
+
+        Task<(bool IsSuccess, string? Message, IEnumerable<WooOrderDTO> Orders)> GetDealerOrdersAsync(
+            string? bearerToken = null,
+            CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Envía múltiples transferencias a la API externa
         /// </summary>

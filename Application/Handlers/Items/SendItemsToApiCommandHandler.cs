@@ -38,12 +38,15 @@ namespace Application.Handlers.Items
         {
             _logger.LogDebug("Enviando articulo SapDocEntry: {SapDocEntry} al API", command.Item.SapDocEntry);
             var itemCode = command.Item.SapDocEntry?.Trim();
+            var transaction_type = command.Item.TransactionType?.Trim();
+            var bodega = command.Item.Bodega?.Trim();
+
             if (string.IsNullOrWhiteSpace(itemCode))
             {
                 return (false, "SapDocEntry/ItemCode vacío en cola");
             }
 
-            var detail = await _hanaRepository.GetItemDetailByItemCodeAsync(itemCode);
+            var detail = await _hanaRepository.GetItemDetailByItemCodeAsync(command.DestinationType, itemCode, bodega);
             if (detail == null)
             {
                 return (false, $"No se encontró detalle de artículo para ItemCode={itemCode}");
@@ -83,7 +86,7 @@ namespace Application.Handlers.Items
                 Name = (detail.ItemName ?? command.Item.Name ?? string.Empty).Trim(),
                 SKU = (detail.ItemCode ?? command.Item.SapDocEntry ?? string.Empty).Trim(),
                 Status = "draft",
-                RegularPrice = (detail.regularPrice ?? "0.00").Trim(),
+                RegularPrice = (detail.regularPrice.ToString() ?? "0.00").Trim(),
                 StockQuantity = Math.Max(0, (int)Math.Round(command.Item.Stock, MidpointRounding.AwayFromZero)),
                 Description = (detail.description ?? string.Empty).Trim(),
                 ManageStock = detail.manageStock,

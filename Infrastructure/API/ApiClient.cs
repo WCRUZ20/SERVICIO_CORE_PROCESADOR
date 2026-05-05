@@ -24,10 +24,7 @@ namespace Infrastructure.API
         private readonly JsonSerializerOptions _jsonOptions;
         private const int DefaultTimeoutSeconds = 30;
 
-        public ApiClient(
-            HttpClient httpClient,
-            ILogger<ApiClient> logger,
-            IOptions<OptionSecretsSL> secrets)
+        public ApiClient(HttpClient httpClient,ILogger<ApiClient> logger,IOptions<OptionSecretsSL> secrets)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -99,7 +96,7 @@ namespace Infrastructure.API
         //    }
 
         //    var endpoint = _secrets.ProcesarDocumentoEndPoint.TrimStart('/');
-            
+
         //    try
         //    {
         //        _logger.LogInformation(
@@ -146,11 +143,195 @@ namespace Infrastructure.API
         //    }
         //}
 
-        public async Task<(bool IsSuccess, string? Message)> SendItemAsync(
-            WooProductRequestDTO item,
-            ItemDestinationType destinationType,
-            string? bearerToken = null,
-            CancellationToken cancellationToken = default)
+        public async Task<(bool IsSuccess, string? Message)> SendStockAsync(WooStockRequestDTO item, Application.Commands.Stock.ItemDestinationType destinationType, string? bearerToken = null, CancellationToken cancellationToken = default)
+        {
+            if (item == null)
+            {
+                const string error = "El request no puede ser null";
+                _logger.LogWarning(error);
+                return (false, error);
+            }
+
+            if (string.IsNullOrWhiteSpace(item.SKU))
+            {
+                var error = "SKU inválido para el payload de artículo";
+                _logger.LogWarning(error);
+                return (false, error);
+            }
+
+            var endpoint = destinationType switch
+            {
+                Application.Commands.Stock.ItemDestinationType.Cliente => _secrets.ProcesarStockClienteEndPoint,
+                Application.Commands.Stock.ItemDestinationType.Dealer => _secrets.ProcesarStockDealerEndPoint,
+                _ => null
+            };
+
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                var error = $"No hay endpoint configurado para stock tipo {destinationType}";
+                _logger.LogError(error);
+                return (false, error);
+            }
+
+            var baseUrl = _secrets.ApiMiddlewareIPUrl?.TrimEnd('/');
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                const string error = "ApiMiddlewareIPUrl no está configurada para el envío de artículos";
+                _logger.LogError(error);
+                return (false, error);
+            }
+
+            endpoint = endpoint.TrimStart('/');
+            var requestUrl = $"{baseUrl}/{endpoint}";
+
+            try
+            {
+                _logger.LogInformation(
+                    "Enviando payload de artículo SKU={Sku}, Name={Name} al endpoint {Endpoint}",
+                    item.SKU,
+                    item.StockQuantity,
+                    requestUrl);
+
+                using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
+                {
+                    Content = JsonContent.Create(item)
+                };
+
+                if (!string.IsNullOrWhiteSpace(bearerToken))
+                {
+                    request.Headers.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
+                }
+
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
+
+                return await ProcessResponseAsync(
+                    response,
+                    requestUrl,
+                    $"SKU={item.SKU}",
+                    cancellationToken);
+            }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                var errorMessage = $"Timeout al enviar articulo SKU={item.SKU}";
+                _logger.LogError(ex, $"{errorMessage}. Timeout configurado: {DefaultTimeoutSeconds} segundos");
+                return (false, errorMessage);
+            }
+            catch (TaskCanceledException ex)
+            {
+                var errorMessage = $"Operación cancelada al enviar articulo SKU={item.SKU}";
+                _logger.LogWarning(ex, errorMessage);
+                return (false, errorMessage);
+            }
+            catch (HttpRequestException ex)
+            {
+                var errorMessage = $"Error de comunicación con la API: {ex.Message}";
+                _logger.LogError(ex, $"{errorMessage} para articulo SKU={item.SKU}");
+                return (false, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Error inesperado: {ex.Message}";
+                _logger.LogError(ex, $"{errorMessage} al enviar articulo SKU={item.SKU}");
+                return (false, errorMessage);
+            }
+        }
+
+        public async Task<(bool IsSuccess, string? Message)> SendPrecioAsync(WooPrecioRequestDTO item, Application.Commands.Precio.ItemDestinationType destinationType, string? bearerToken = null, CancellationToken cancellationToken = default)
+        {
+            if (item == null)
+            {
+                const string error = "El request no puede ser null";
+                _logger.LogWarning(error);
+                return (false, error);
+            }
+
+            if (string.IsNullOrWhiteSpace(item.SKU))
+            {
+                var error = "SKU inválido para el payload de artículo";
+                _logger.LogWarning(error);
+                return (false, error);
+            }
+
+            var endpoint = destinationType switch
+            {
+                Application.Commands.Precio.ItemDestinationType.Cliente => _secrets.ProcesarPrecioClienteEndPoint,
+                Application.Commands.Precio.ItemDestinationType.Dealer => _secrets.ProcesarPrecioDealerEndPoint,
+                _ => null
+            };
+
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                var error = $"No hay endpoint configurado para stock tipo {destinationType}";
+                _logger.LogError(error);
+                return (false, error);
+            }
+
+            var baseUrl = _secrets.ApiMiddlewareIPUrl?.TrimEnd('/');
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                const string error = "ApiMiddlewareIPUrl no está configurada para el envío de artículos";
+                _logger.LogError(error);
+                return (false, error);
+            }
+
+            endpoint = endpoint.TrimStart('/');
+            var requestUrl = $"{baseUrl}/{endpoint}";
+
+            try
+            {
+                _logger.LogInformation(
+                    "Enviando payload de artículo SKU={Sku}, Name={Name} al endpoint {Endpoint}",
+                    item.SKU,
+                    item.RegularPrice,
+                    requestUrl);
+
+                using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
+                {
+                    Content = JsonContent.Create(item)
+                };
+
+                if (!string.IsNullOrWhiteSpace(bearerToken))
+                {
+                    request.Headers.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
+                }
+
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
+
+                return await ProcessResponseAsync(
+                    response,
+                    requestUrl,
+                    $"SKU={item.SKU}",
+                    cancellationToken);
+            }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                var errorMessage = $"Timeout al enviar articulo SKU={item.SKU}";
+                _logger.LogError(ex, $"{errorMessage}. Timeout configurado: {DefaultTimeoutSeconds} segundos");
+                return (false, errorMessage);
+            }
+            catch (TaskCanceledException ex)
+            {
+                var errorMessage = $"Operación cancelada al enviar articulo SKU={item.SKU}";
+                _logger.LogWarning(ex, errorMessage);
+                return (false, errorMessage);
+            }
+            catch (HttpRequestException ex)
+            {
+                var errorMessage = $"Error de comunicación con la API: {ex.Message}";
+                _logger.LogError(ex, $"{errorMessage} para articulo SKU={item.SKU}");
+                return (false, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Error inesperado: {ex.Message}";
+                _logger.LogError(ex, $"{errorMessage} al enviar articulo SKU={item.SKU}");
+                return (false, errorMessage);
+            }
+        }
+
+        public async Task<(bool IsSuccess, string? Message)> SendItemAsync(WooProductRequestDTO item, ItemDestinationType destinationType, string? bearerToken = null, CancellationToken cancellationToken = default)
         {
             if (item == null)
             {
@@ -244,15 +425,136 @@ namespace Infrastructure.API
             }
         }
 
+        public async Task<(bool IsSuccess, string? Message, IEnumerable<WooOrderDTO> Orders)> GetClienteOrdersAsync(string? bearerToken = null, CancellationToken cancellationToken = default)
+        {
+            var endpoint = _secrets.GetOrdenesClienteEndPoint;
+
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                const string error = "GetOrdenesClienteEndPoint no está configurado";
+                _logger.LogError(error);
+                return (false, error, Enumerable.Empty<WooOrderDTO>());
+            }
+
+            var baseUrl = _secrets.ApiMiddlewareIPUrl?.TrimEnd('/');
+
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                const string error = "ApiMiddlewareIPUrl no está configurada";
+                _logger.LogError(error);
+                return (false, error, Enumerable.Empty<WooOrderDTO>());
+            }
+
+            endpoint = endpoint.TrimStart('/');
+            var requestUrl = $"{baseUrl}/{endpoint}";
+
+            try
+            {
+                _logger.LogInformation("Consultando órdenes CLIENTE desde endpoint {Endpoint}", requestUrl);
+
+                using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+
+                if (!string.IsNullOrWhiteSpace(bearerToken))
+                {
+                    request.Headers.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
+                }
+
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
+
+                var content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = $"Error al consultar órdenes CLIENTE. StatusCode={response.StatusCode}. Response={content}";
+                    _logger.LogWarning(error);
+                    return (false, error, Enumerable.Empty<WooOrderDTO>());
+                }
+
+                var orders = JsonSerializer.Deserialize<List<WooOrderDTO>>(
+                    content,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                return (true, content, orders ?? Enumerable.Empty<WooOrderDTO>());
+            }
+            catch (Exception ex)
+            {
+                var error = $"Error inesperado al consultar órdenes CLIENTE: {ex.Message}";
+                _logger.LogError(ex, error);
+                return (false, error, Enumerable.Empty<WooOrderDTO>());
+            }
+        }
+
+        public async Task<(bool IsSuccess, string? Message, IEnumerable<WooOrderDTO> Orders)> GetDealerOrdersAsync(string? bearerToken = null, CancellationToken cancellationToken = default)
+        {
+            var endpoint = _secrets.GetOrdenesDealerEndPoint;
+
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                const string error = "GetOrdenesDealerEndPoint no está configurado";
+                _logger.LogError(error);
+                return (false, error, Enumerable.Empty<WooOrderDTO>());
+            }
+
+            var baseUrl = _secrets.ApiMiddlewareIPUrl?.TrimEnd('/');
+
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                const string error = "ApiMiddlewareIPUrl no está configurada";
+                _logger.LogError(error);
+                return (false, error, Enumerable.Empty<WooOrderDTO>());
+            }
+
+            endpoint = endpoint.TrimStart('/');
+            var requestUrl = $"{baseUrl}/{endpoint}";
+
+            try
+            {
+                _logger.LogInformation("Consultando órdenes DEALER desde endpoint {Endpoint}", requestUrl);
+
+                using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+
+                if (!string.IsNullOrWhiteSpace(bearerToken))
+                {
+                    request.Headers.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
+                }
+
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
+
+                var content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = $"Error al consultar órdenes DEALER. StatusCode={response.StatusCode}. Response={content}";
+                    _logger.LogWarning(error);
+                    return (false, error, Enumerable.Empty<WooOrderDTO>());
+                }
+
+                var orders = JsonSerializer.Deserialize<List<WooOrderDTO>>(
+                    content,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                return (true, content, orders ?? Enumerable.Empty<WooOrderDTO>());
+            }
+            catch (Exception ex)
+            {
+                var error = $"Error inesperado al consultar órdenes DEALER: {ex.Message}";
+                _logger.LogError(ex, error);
+                return (false, error, Enumerable.Empty<WooOrderDTO>());
+            }
+        }
 
         /// <summary>
         /// Procesa la respuesta HTTP y determina si fue exitosa
         /// </summary>
-        private async Task<(bool IsSuccess, string? Message)> ProcessResponseAsync(
-            HttpResponseMessage response,
-            string endpoint,
-            string entityRef,
-            CancellationToken cancellationToken)
+        private async Task<(bool IsSuccess, string? Message)> ProcessResponseAsync(HttpResponseMessage response, string endpoint, string entityRef, CancellationToken cancellationToken)
         {
             var statusCode = response.StatusCode;
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -365,7 +667,6 @@ namespace Infrastructure.API
 
             return content;
         }
-
        
     }
 }
