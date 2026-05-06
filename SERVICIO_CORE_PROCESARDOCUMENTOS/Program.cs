@@ -29,6 +29,7 @@ using Application.Handlers.Stock.Dealer;
 using Application.Interfaces;
 using Application.Interfaces.API;
 using Application.Interfaces.HANA;
+using Application.Interfaces.SAP;
 using Application.Interfaces.Security;
 using Application.Interfaces.UseCases.Items.Cliente;
 using Application.Interfaces.UseCases.Items.Dealer;
@@ -47,6 +48,7 @@ using Infrastructure.DataProtection;
 using Infrastructure.HANA;
 using Infrastructure.Helper;
 using Infrastructure.Logging;
+using Infrastructure.SAP;
 using Infrastructure.Security;
 using Mapster;
 using MapsterMapper;
@@ -124,6 +126,13 @@ static string DecryptIfNeeded(string? value, ISecretProtector protector)
 var secretsSection = builder.Configuration.GetSection("ExternalServices:OptionSecretsSL");
 var decryptedSecrets = new OptionSecretsSL
 {
+    CompanyDBSAP = DecryptIfNeeded(secretsSection["CompanyDBSAP"], secretProtector),
+    UserSLSAP = DecryptIfNeeded(secretsSection["UserSLSAP"], secretProtector),
+    PassWordSLSAP = DecryptIfNeeded(secretsSection["PassWordSLSAP"], secretProtector),
+    BaseUrlSLSAP = DecryptIfNeeded(secretsSection["BaseUrlSLSAP"], secretProtector),
+    LoginSLSAP = DecryptIfNeeded(secretsSection["LoginSLSAP"], secretProtector),
+    //TransferEndPointSLSAP = DecryptIfNeeded(secretsSection["TransferEndPointSLSAP"], secretProtector),
+
     ApiMiddlewareIPUrl = DecryptIfNeeded(secretsSection["ApiMiddlewareIPUrl"], secretProtector),
     ProcesarDocumentoEndPoint = DecryptIfNeeded(secretsSection["ProcesarDocumentoEndPoint"], secretProtector),
     ProcesarArticuloClienteEndPoint = DecryptIfNeeded(secretsSection["ProcesarArticuloClienteEndPoint"], secretProtector),
@@ -140,7 +149,14 @@ var decryptedSecrets = new OptionSecretsSL
 };
 // Configurar OptionSecretsSL con valores ya desencriptados
 builder.Services.Configure<OptionSecretsSL>(options =>
-{ 
+{
+    options.CompanyDBSAP = decryptedSecrets.CompanyDBSAP;
+    options.UserSLSAP = decryptedSecrets.UserSLSAP;
+    options.PassWordSLSAP = decryptedSecrets.PassWordSLSAP;
+    options.BaseUrlSLSAP = decryptedSecrets.BaseUrlSLSAP;
+    options.LoginSLSAP = decryptedSecrets.LoginSLSAP;
+    //options.TransferEndPointSLSAP = decryptedSecrets.TransferEndPointSLSAP;
+
     options.ApiMiddlewareIPUrl = decryptedSecrets.ApiMiddlewareIPUrl;
     options.ProcesarDocumentoEndPoint = decryptedSecrets.ProcesarDocumentoEndPoint;
     options.ProcesarArticuloClienteEndPoint = decryptedSecrets.ProcesarArticuloClienteEndPoint;
@@ -205,6 +221,7 @@ builder.Services.AddScoped<ExecuteStoredProcedureHanaAsync>();
 // ==========================
 // Registrar IHttpClientFactory primero
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<ISapBusinessPartnerService, SapBusinessPartnerService>();
 // Registrar como Singleton para mantener el caché del token
 builder.Services.AddSingleton<IApiTokenService, ApiTokenService>();
 

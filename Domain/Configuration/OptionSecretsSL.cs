@@ -2,13 +2,12 @@ namespace Domain.Configuration
 {
     public class OptionSecretsSL
     {
-        //public string CompanyDBSAP { get; set; } = string.Empty;
-        //public string UserSLSAP { get; set; } = string.Empty;
-        //public string PassWordSLSAP { get; set; } = string.Empty;
-        //public string BaseUrlSLSAP { get; set; } = string.Empty;
-        //public string LoginSLSAP { get; set; } = string.Empty;
+        public string CompanyDBSAP { get; set; } = string.Empty;
+        public string UserSLSAP { get; set; } = string.Empty;
+        public string PassWordSLSAP { get; set; } = string.Empty;
+        public string BaseUrlSLSAP { get; set; } = string.Empty;
+        public string LoginSLSAP { get; set; } = string.Empty;
         //public string TransferEndPointSLSAP { get; set; } = string.Empty;
-
 
         public string ApiMiddlewareIPUrl { get; set; } = string.Empty;
         public string ProcesarDocumentoEndPoint { get; set; } = string.Empty;
