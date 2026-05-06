@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Application.Handlers.Order.Cliente
 {
-    public class GetClienteOrdersToUpdateWooHandler : ICommandHandler<GetClienteOrdersToUpdateWoo, IEnumerable<SapItemQueeDTO>>
+    public class GetClienteOrdersToUpdateWooHandler : ICommandHandler<GetClienteOrdersToUpdateWooCommand, IEnumerable<SapItemQueeDTO>>
     {
         private readonly IHanaRepository _hanaRepository;
         private readonly IMapper _mapper;
@@ -31,7 +31,7 @@ namespace Application.Handlers.Order.Cliente
             _logger = logger;
         }
 
-        public async Task<IEnumerable<SapItemQueeDTO>> HandleAsync(GetClienteOrdersToUpdateWoo command)
+        public async Task<IEnumerable<SapItemQueeDTO>> HandleAsync(GetClienteOrdersToUpdateWooCommand command)
         {
             _logger.LogInformation("Obteniendo ordenes pendientes de CLIENTE desde COLA para posible creacion en SAP");
             return await _hanaRepository.GetPendingClienteOrdersAsync<SapItemQueeDTO>();

@@ -8,14 +8,18 @@ using Domain.Helper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using SAPbobsCOM;
+using System.Runtime.InteropServices;
 
 namespace Application.Interfaces.UseCases.Order.Cliente
 {
     public class ProcesarClienteOrderSapUseCase : IProcesarClienteOrderSapUseCase
     {
-        private readonly ICommandHandler<GetClienteOrdersToUpdateWoo, IEnumerable<SapItemQueeDTO>> _getOrdersHandler;
+        private readonly ICommandHandler<GetClienteOrdersToUpdateWooCommand, IEnumerable<SapItemQueeDTO>> _getOrdersHandler;
         private readonly ICommandHandler<MarkStatusOrderAsCommand, bool> _markStatusOrdenAsHandler;
-        private readonly ISapBusinessPartnerService _sapBusinessPartnerService;
+        private readonly ISapDiApiUnitOfWork _sapUow;
+        private readonly ISapBusinessPartnerDiApiService _sapBusinessPartnerDiApiService;
+        private readonly ISapSalesOrderService _sapSalesOrderService;
         private readonly ILogger<ProcesarClienteOrderSapUseCase> _logger;
         private readonly WorkerSettings _settings;
         private readonly JsonSerializerOptions _jsonOptions = new()
@@ -24,15 +28,19 @@ namespace Application.Interfaces.UseCases.Order.Cliente
         };
 
         public ProcesarClienteOrderSapUseCase(
-            ICommandHandler<GetClienteOrdersToUpdateWoo, IEnumerable<SapItemQueeDTO>> getOrdersHandler,
+            ICommandHandler<GetClienteOrdersToUpdateWooCommand, IEnumerable<SapItemQueeDTO>> getOrdersHandler,
             ICommandHandler<MarkStatusOrderAsCommand, bool> markStatusOrdenAsHandler,
-            ISapBusinessPartnerService sapBusinessPartnerService,
+            ISapDiApiUnitOfWork sapUow,
+            ISapBusinessPartnerDiApiService sapBusinessPartnerDiApiService,
+            ISapSalesOrderService sapSalesOrderService,
             ILogger<ProcesarClienteOrderSapUseCase> logger,
             IOptions<WorkerSettings> settings)
         {
             _getOrdersHandler = getOrdersHandler;
             _markStatusOrdenAsHandler = markStatusOrdenAsHandler;
-            _sapBusinessPartnerService = sapBusinessPartnerService;
+            _sapUow = sapUow;
+            _sapBusinessPartnerDiApiService = sapBusinessPartnerDiApiService;
+            _sapSalesOrderService = sapSalesOrderService;
             _logger = logger;
             _settings = settings.Value;
         }
@@ -46,7 +54,7 @@ namespace Application.Interfaces.UseCases.Order.Cliente
                     return new ProcesarItemsResult { IsSuccess = true, Message = "Proceso CLIENTE creacion de ordenes en sap y actualizacion de estado INTEGRADO en Woo deshabilitado" };
                 }
 
-                var ordersList = (await _getOrdersHandler.HandleAsync(new GetClienteOrdersToUpdateWoo())).ToList();
+                var ordersList = (await _getOrdersHandler.HandleAsync(new GetClienteOrdersToUpdateWooCommand())).ToList();
                 if (!ordersList.Any())
                 {
                     return new ProcesarItemsResult { IsSuccess = true, Message = "No hay ordenes CLIENTE pendientes", ItemsProcessed = 0 };
@@ -77,23 +85,6 @@ namespace Application.Interfaces.UseCases.Order.Cliente
 
                     order.idWoo = wooId;
 
-                    var sapOrder = await _sapBusinessPartnerService.GetSalesOrderByWooIdAsync(wooId, cancellationToken);
-                    if (sapOrder != null)
-                    {
-                        order.SapDocEntry = sapOrder.DocEntry;
-                        order.SapDocNum = sapOrder.DocNum;
-                        if (await MarkOrderAsync(order, StatusHanaDocumentLevel.Confirmed, $"Orden ya existe en SAP con U_WOO_ID={wooId}."))
-                        {
-                            sent++;
-                        }
-                        else
-                        {
-                            failed++;
-                        }
-
-                        continue;
-                    }
-
                     var identification = GetBillingIdentification(wooOrder.Billing);
                     if (string.IsNullOrWhiteSpace(identification))
                     {
@@ -102,29 +93,85 @@ namespace Application.Interfaces.UseCases.Order.Cliente
                         continue;
                     }
 
-                    var customer = await _sapBusinessPartnerService.GetCustomerByIdentificationAsync(identification, cancellationToken);
-                    if (customer == null)
+                    try
                     {
-                        var createRequest = BuildBusinessPartnerRequest(wooOrder, identification);
-                        var createResult = await _sapBusinessPartnerService.CreateCustomerAsync(createRequest, cancellationToken);
-                        if (createResult.IsSuccess)
-                        {
-                            _logger.LogInformation($"Socio de negocio {createResult.CardCode} creado correctamente."); 
+                        await _sapUow.BeginAsync(cancellationToken);
 
-                            customer.CardCode = createResult.CardCode;
-                            customer.LicTradNum = createRequest.Identification;
-                            customer.CardName = createRequest.CardName;
-                        }
-                        else
+                        var existingOrder = GetSalesOrderByWooId(_sapUow.Company, wooId);
+                        if (existingOrder != null)
                         {
-                            failed++;
-                            await MarkOrderAsync(order, StatusHanaDocumentLevel.Error, createResult.Message ?? $"No se pudo crear socio de negocio {createRequest.CardCode}.");
+                            order.SapDocEntry = existingOrder.DocEntry;
+                            order.SapDocNum = existingOrder.DocNum;
+
+                            await _sapUow.CommitAsync(cancellationToken);
+
+                            if (await MarkOrderAsync(order, StatusHanaDocumentLevel.Confirmed, $"Orden ya existe en SAP con U_ID_WOO={wooId}."))
+                                sent++;
+                            else
+                                failed++;
+
                             continue;
                         }
-                                               
-                    }
 
-                    _logger.LogInformation($"Desde aqui se puede crear la orden con el cliente {customer.CardCode}");
+                        var customer = await _sapBusinessPartnerDiApiService.GetCustomerByIdentificationAsync(
+                            _sapUow.Company,
+                            identification,
+                            cancellationToken);
+
+                        if (customer == null)
+                        {
+                            var createRequest = BuildBusinessPartnerRequest(wooOrder, identification);
+                            var createResult = await _sapBusinessPartnerDiApiService.CreateCustomerAsync(
+                                _sapUow.Company,
+                                createRequest,
+                                cancellationToken);
+
+                            if (!createResult.IsSuccess)
+                            {
+                                await _sapUow.RollbackAsync(cancellationToken);
+                                failed++;
+                                await MarkOrderAsync(order, StatusHanaDocumentLevel.Error, createResult.Message ?? $"No se pudo crear socio de negocio {createRequest.CardCode}.");
+                                continue;
+                            }
+
+                            customer = new SapBusinessPartnerLookupDTO
+                            {
+                                CardCode = createResult.CardCode,
+                                CardName = createRequest.CardName,
+                                LicTradNum = createRequest.Identification
+                            };
+                        }
+
+                        var createOrderResult = await _sapSalesOrderService.CreateSalesOrderFromWooAsync(
+                            _sapUow.Company,
+                            wooId,
+                            wooOrder,
+                            customer.CardCode,
+                            cancellationToken);
+
+                        if (!createOrderResult.IsSuccess)
+                        {
+                            await _sapUow.RollbackAsync(cancellationToken);
+                            failed++;
+                            await MarkOrderAsync(order, StatusHanaDocumentLevel.Error, createOrderResult.Message ?? "Error creando orden en SAP por DI API.");
+                            continue;
+                        }
+
+                        await _sapUow.CommitAsync(cancellationToken);
+
+                        order.SapDocEntry = createOrderResult.DocEntry ?? string.Empty;
+                        order.SapDocNum = createOrderResult.DocNum ?? string.Empty;
+                        if (await MarkOrderAsync(order, StatusHanaDocumentLevel.Confirmed, $"Orden creada en SAP (DocEntry={order.SapDocEntry}, DocNum={order.SapDocNum})."))
+                            sent++;
+                        else
+                            failed++;
+                    }
+                    catch (Exception ex)
+                    {
+                        try { await _sapUow.RollbackAsync(cancellationToken); } catch { /* best effort */ }
+                        failed++;
+                        await MarkOrderAsync(order, StatusHanaDocumentLevel.Error, $"Excepción DI API: {ex.Message}");
+                    }
                                         
                 }
 
@@ -222,6 +269,33 @@ namespace Application.Interfaces.UseCases.Order.Cliente
         private static string FirstNotEmpty(params string?[] values)
         {
             return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
+        }
+
+        private static SapSalesOrderLookupDTO? GetSalesOrderByWooId(Company company, string wooId)
+        {
+            Recordset? rs = null;
+            try
+            {
+                rs = (Recordset)company.GetBusinessObject(BoObjectTypes.BoRecordset);
+                var id = (wooId ?? string.Empty).Trim().Replace("'", "''");
+                rs.DoQuery(
+                    $"SELECT TOP 1 \"DocEntry\", \"DocNum\" FROM \"ORDR\" WHERE \"U_ID_WOO\" = '{id}' ORDER BY \"DocEntry\" DESC");
+
+                if (rs.EoF) return null;
+
+                return new SapSalesOrderLookupDTO
+                {
+                    DocEntry = rs.Fields.Item("DocEntry").Value?.ToString() ?? string.Empty,
+                    DocNum = rs.Fields.Item("DocNum").Value?.ToString() ?? string.Empty
+                };
+            }
+            finally
+            {
+                if (rs != null && Marshal.IsComObject(rs))
+                {
+                    try { Marshal.FinalReleaseComObject(rs); } catch { }
+                }
+            }
         }
     }
 }

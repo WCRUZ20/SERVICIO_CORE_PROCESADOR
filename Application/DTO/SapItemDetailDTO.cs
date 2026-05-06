@@ -24,6 +24,30 @@ namespace Application.DTO
         public bool manageStock { get; set; } = true;
         public string? shortDescription { get; set; }
 
+        public string? taxstatus { get; set; }
+        public string? weight { get; set; }
+
+        public DimensionsD? dimension { get; set; }
+
+        public List<Upsell_idsD>? upsell_ids { get; set; }
+
+        public List<Cross_sell_idsD>? cross_sell_ids { get; set; }
+
     }
 
+    public class DimensionsD
+    {
+        public string? length { get; set; }
+        public string? width { get; set; }
+        public string? height { get; set; }
+    }
+    public class Upsell_idsD
+    {
+        public string Id { get; set; }
+    }
+
+    public class Cross_sell_idsD
+    {
+        public string Id { get; set; }
+    }
 }

@@ -36,6 +36,46 @@ namespace Application.DTO
         [JsonPropertyName("shortDescription")]
         public string ShortDescription { get; set; } = string.Empty;
 
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "simple";
+
+        [JsonPropertyName("tax_status")]
+        public string? taxstatus { get; set; }
+
+        [JsonPropertyName("weight")]
+        public string? weight { get; set; }
+
+        [JsonPropertyName("dimensions")]
+        public Dimensions? dimension { get; set; }
+
+        [JsonPropertyName("upsell_ids")]
+        public List<Upsell_ids>? upsell_ids { get; set; }
+
+        [JsonPropertyName("cross_sell_ids")]
+        public List<Cross_sell_ids>? cross_sell_ids { get; set; }
+
+    }
+
+    public class Dimensions
+    {
+        [JsonPropertyName("length")]
+        public string? length { get; set; }
+
+        [JsonPropertyName("width")]
+        public string? width { get; set; }
+
+        [JsonPropertyName("height")]
+        public string? height { get; set; }
+    }
+
+    public class Upsell_ids
+    {
+        public string Id { get; set; }
+    }
+
+    public class Cross_sell_ids
+    {
+        public string Id { get; set; }
     }
 
 }
