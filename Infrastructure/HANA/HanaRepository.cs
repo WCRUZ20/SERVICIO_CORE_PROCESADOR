@@ -943,6 +943,107 @@ namespace Infrastructure.HANA
             }, cancellationToken);
 
         }
+
+        public async Task<IEnumerable<SapItemQueeDTO>> GetPendingClienteOrdersAsync<TResult>(CancellationToken cancellationToken = default) where TResult : class, new()
+        {
+            //return GetPendingItemsAsync<TResult>(TransactionTypeCliente, cancellationToken);
+            return await _queryResilienciaItems.ExecuteAsync(async (ct) =>
+            {
+
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "filtro_1", "ODRP" },
+                    { "filtro_2", "" },
+                    { "filtro_3", TransactionTypeCliente.ToString() },
+                    { "filtro_4", Transaction.Order },
+                    { "filtro_5", "" }
+                };
+
+                var items = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemQueeDTO>(
+                    connection,
+                    "sp_integracion_sap_woo_consultas",
+                    parameters,
+                    ct);
+
+                return items;
+            }, cancellationToken);
+        }
+
+        public async Task<IEnumerable<SapItemQueeDTO>> GetPendingDealerOrdersAsync<TResult>(CancellationToken cancellationToken = default) where TResult : class, new()
+        {
+            //return GetPendingItemsAsync<TResult>(TransactionTypeCliente, cancellationToken);
+            return await _queryResilienciaItems.ExecuteAsync(async (ct) =>
+            {
+
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "filtro_1", "ODRP" },
+                    { "filtro_2", "" },
+                    { "filtro_3", TransactionTypeDealer.ToString() },
+                    { "filtro_4", Transaction.Order },
+                    { "filtro_5", "" }
+                };
+
+                var items = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureQueryAsync<SapItemQueeDTO>(
+                    connection,
+                    "sp_integracion_sap_woo_consultas",
+                    parameters,
+                    ct);
+
+                return items;
+            }, cancellationToken);
+        }
+
+        public async Task<bool> MarkStatusOrderAsAsync(SapItemQueeDTO item, CancellationToken cancellationToken = default)
+        {
+            return await _transactionResiliencia.ExecuteAsync(async (ct) =>
+            {
+                using var connection = await _connectionFactory.CreateConnectionAsync(ct);
+                await connection.OpenAsync(ct);
+
+                var parameters = new Dictionary<string, object>
+                    {
+                        { "filtro_1", "ODRM" },
+                        { "filtro_2", "" },
+                        { "filtro_3", "" },
+                        { "filtro_4", item.Transaction },
+                        { "filtro_5", item.TransactionType},
+                        { "filtro_6", "" },
+                        { "filtro_7", "" },
+                        { "filtro_8", "" },
+                        { "filtro_9", "" },
+                        { "filtro_10", "" },
+                        { "filtro_11", "" },
+                        { "filtro_12", "" },
+                        { "filtro_13", item.Status },
+                        { "filtro_14", 0},
+                        { "filtro_15", item.idWoo},
+                        { "filtro_16", 0},
+                        { "filtro_17", "" },
+                        { "ResultFlag", 0 }
+                    };
+
+                var result = await _executeStoredProcedureHanaAsync.ExecuteStoredProcedureTransactionAsync(
+                    connection,
+                    "sp_integracion_sap_woo_transactions",
+                    parameters,
+                    null,
+                    ct);
+
+                if (!result)
+                {
+                    _logger.LogInformation($"Articulo NO actualizado : {item.SapDocEntry} ");
+                }
+
+                return result;
+            }, cancellationToken);
+        }
         #endregion
     }
 

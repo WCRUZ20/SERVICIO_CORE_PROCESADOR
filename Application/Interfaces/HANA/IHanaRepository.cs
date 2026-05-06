@@ -61,6 +61,12 @@ namespace Application.Interfaces.HANA
         Task<IEnumerable<SapItemQueeDTO>> GetPendingClienteItemsAsync<TResult>(
             CancellationToken cancellationToken = default) where TResult : class, new();
 
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingClienteOrdersAsync<TResult>(
+            CancellationToken cancellationToken = default) where TResult : class, new();
+
+        Task<IEnumerable<SapItemQueeDTO>> GetPendingDealerOrdersAsync<TResult>(
+            CancellationToken cancellationToken = default) where TResult : class, new();
+
         Task<IEnumerable<SapItemQueeDTO>> GetPendingDealerItemsAsync<TResult>(
             CancellationToken cancellationToken = default) where TResult : class, new();
 
@@ -84,6 +90,10 @@ namespace Application.Interfaces.HANA
         /// Marca un artículo como procesado
         /// </summary>
         Task<bool> MarkStatusItemAsAsync(
+            SapItemQueeDTO item,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> MarkStatusOrderAsAsync(
             SapItemQueeDTO item,
             CancellationToken cancellationToken = default);
 

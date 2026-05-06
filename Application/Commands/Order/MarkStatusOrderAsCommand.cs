@@ -6,7 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Commands.Order.Cliente
+namespace Application.Commands.Order
 {
-    public record GetClienteOrdersToUpdateWoo : ICommand<IEnumerable<SapItemQueeDTO>>;
+    public record MarkStatusOrderAsCommand(SapItemQueeDTO Orden)
+        : ICommand<bool>;
 }

@@ -90,6 +90,7 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
             await ExecuteHanaToApiClientePrecioProcessAsync(scope, stoppingToken);
 
             await ExecuteRequestOrdersClienteProcessAsync(scope, stoppingToken);
+            await ExecuteHanaToApiClienteOrderProcessAsync(scope, stoppingToken);
         }
 
         private async Task ProcessDealerAsync(IServiceScope scope, CancellationToken stoppingToken)
@@ -104,6 +105,7 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
             await ExecuteHanaToApiDealerPrecioProcessAsync(scope, stoppingToken);
 
             await ExecuteRequestOrdersDealerProcessAsync(scope, stoppingToken);
+            await ExecuteHanaToApiDealerOrderProcessAsync(scope, stoppingToken);
         }
 
         #region "PRECIO INSERTA COLA CUANDO CAMBIA EL PRECIO"
@@ -405,6 +407,50 @@ namespace SERVICIOCORE_PROCESARDOCUMENTOSSAP
             {
                 _logger.LogError(
                     $"ERROR EN PROCESO CONSULTA API (SERVICELAYER) Y ENCOLAMIENTO DEALER - ORDENES: {resultOrder.Message}");
+            }
+        }
+        #endregion
+
+        #region "ORDENES CREACION Y ENVIO INTEGRADO HACIA API"
+        private async Task ExecuteHanaToApiClienteOrderProcessAsync(IServiceScope scope, CancellationToken cancellationToken)
+        {
+            var ordersUseCase = scope.ServiceProvider.GetRequiredService<IProcesarClienteOrderSapUseCase>();
+            _logger.LogInformation("EJECUTANDO PROCESO ENVIO API (SERVICELAYER) CLIENTE - ORDENES");
+            var ordersResult = await ordersUseCase.ExecuteAsync(cancellationToken);
+
+            if (ordersResult.IsSuccess)
+            {
+                _logger.LogInformation(
+                    "PROCESO CREACION ORDEN/ENVIO API (SERVICELAYER) CLIENTE - ORDENES COMPLETADO: {Message}. Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
+                    ordersResult.Message,
+                    ordersResult.ItemsProcessed,
+                    ordersResult.ItemsSent,
+                    ordersResult.ItemsFailed);
+            }
+            else
+            {
+                _logger.LogError("ERROR EN PROCESO CREACION ORDEN/ENVIO API (SERVICELAYER) CLIENTE - ORDENES: {Error}", ordersResult.ErrorMessage);
+            }
+        }
+
+        private async Task ExecuteHanaToApiDealerOrderProcessAsync(IServiceScope scope, CancellationToken cancellationToken)
+        {
+            var ordersUseCase = scope.ServiceProvider.GetRequiredService<IProcesarDealerOrderSapUseCase>();
+            _logger.LogInformation("EJECUTANDO PROCESO ENVIO API (SERVICELAYER) DEALER - ORDENES");
+            var ordersResult = await ordersUseCase.ExecuteAsync(cancellationToken);
+
+            if (ordersResult.IsSuccess)
+            {
+                _logger.LogInformation(
+                    "PROCESO CREACION ORDEN/ENVIO API (SERVICELAYER) DEALER - ORDENES COMPLETADO: {Message}. Procesadas: {Processed}, Enviadas: {Sent}, Fallidas: {Failed}",
+                    ordersResult.Message,
+                    ordersResult.ItemsProcessed,
+                    ordersResult.ItemsSent,
+                    ordersResult.ItemsFailed);
+            }
+            else
+            {
+                _logger.LogError("ERROR EN PROCESO CREACION ORDEN/ENVIO API (SERVICELAYER) DEALER - ORDENES: {Error}", ordersResult.ErrorMessage);
             }
         }
         #endregion

@@ -338,8 +338,16 @@ builder.Services.AddScoped<
     GetPendingsClienteOrdersHandler>();
 
 builder.Services.AddScoped<
+    ICommandHandler<GetClienteOrdersToUpdateWoo, IEnumerable<SapItemQueeDTO>>,
+    GetClienteOrdersToUpdateWooHandler>();
+
+builder.Services.AddScoped<
     ICommandHandler<GetPendingsDealerOrdersCommand, IEnumerable<WooOrderDTO>>,
     GetPendingsDealerOrdersHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<GetDealerOrdersToUpdateWoo, IEnumerable<SapItemQueeDTO>>,
+    GetDealerOrdersToUpdateWooHandler>();
 
 builder.Services.AddScoped<
     ICommandHandler<CheckOrderExistsCommand, bool>,
@@ -348,6 +356,10 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     ICommandHandler<InsertOrdersCommand, bool>,
     InsertOrdersCommandHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<MarkStatusOrderAsCommand, bool>,
+    MarkStatusOrdenAsCommandHandler>();
 
 // ==========================
 // UseCases
@@ -374,6 +386,8 @@ builder.Services.AddScoped<IProcesarDealerPrecioHanaUseCase, ProcesarDealerPreci
 //ORDENES
 builder.Services.AddScoped<IGetClienteOrderSapUseCase, GetClienteOrderSapUseCase>();
 builder.Services.AddScoped<IGetDealerOrderSapUseCase, GetDealerOrderSapUseCase>();
+builder.Services.AddScoped<IProcesarClienteOrderSapUseCase, ProcesarClienteOrderSapUseCase>();
+builder.Services.AddScoped<IProcesarDealerOrderSapUseCase, ProcesarDealerOrderSapUseCase>();
 
 // ==========================
 // Worker
